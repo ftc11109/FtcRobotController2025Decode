@@ -14,14 +14,14 @@ public class Intake {
     }
 
     public void tick() {
-        if(gamepad.dpad_down) {
-            intakeMotor.setPower(0.8);
+        if(gamepad.dpad_left) {
+            intakeMotor.setPower(0);
+        }
+        else if(gamepad.dpad_down) {
+            intakeMotor.setPower(0.05);
         }
         else if(gamepad.dpad_up) {
-            intakeMotor.setPower(-0.8);
-        }
-        else {
-            intakeMotor.setPower(0);
+            intakeMotor.setPower(-0.05);
         }
     }
 }
