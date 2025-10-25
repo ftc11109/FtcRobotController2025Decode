@@ -15,13 +15,16 @@ public class Intake {
 
     public void tick() {
         if(gamepad.dpad_left) {
+            //stop
             intakeMotor.setPower(0);
         }
         else if(gamepad.dpad_down) {
-            intakeMotor.setPower(0.05);
+            //counterclockwise
+            intakeMotor.setPower(0.5);
         }
         else if(gamepad.dpad_up) {
-            intakeMotor.setPower(-0.05);
+            //clockwise
+            intakeMotor.setPower(-0.5);
         }
     }
 }

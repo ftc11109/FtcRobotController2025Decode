@@ -35,6 +35,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
@@ -64,6 +65,7 @@ public class DecodeAutonomus extends LinearOpMode {
                                                       (WHEEL_DIAMETER_INCHES * 3.14159);
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
+    static final double     TURN_ANGLE_TOLERANCE    = 0.25;
 
     @Override
     public void runOpMode() {
@@ -89,14 +91,11 @@ public class DecodeAutonomus extends LinearOpMode {
 
         imu = hardwareMap.get(IMU.class, "imu");
         // This needs to be changed to match the orientation on your robot
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection usbDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
-        RevHubOrientationOnRobot orientationOnRobot = new
-                RevHubOrientationOnRobot(logoDirection, usbDirection);
-        imu.initialize(new IMU.Parameters(orientationOnRobot));
+        RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+        imu.initialize(new IMU.Parameters(revHubOrientationOnRobot));
 
         //Robot data class (for IMU direction)
 
@@ -111,7 +110,6 @@ public class DecodeAutonomus extends LinearOpMode {
 
         // Wait for the game to start (driver presses START)
         waitForStart();
-
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
         encoderDrive(DRIVE_SPEED,  6,  6, 6, 6, 5.0);
@@ -138,10 +136,8 @@ public class DecodeAutonomus extends LinearOpMode {
         int newFrontRightTarget;
         int newBackLeftTarget;
         int newBackRightTarget;
-
         // Ensure that the OpMode is still active
         if (opModeIsActive()) {
-
             // Determine new target position, and pass to motor controller
             newFrontLeftTarget = frontLeftDrive.getCurrentPosition() + (int)(frontLeftInches * COUNTS_PER_INCH);
             newFrontRightTarget = frontRightDrive.getCurrentPosition() + (int)(frontRightInches * COUNTS_PER_INCH);
@@ -151,18 +147,15 @@ public class DecodeAutonomus extends LinearOpMode {
             frontRightDrive.setTargetPosition(newFrontRightTarget);
             backLeftDrive.setTargetPosition(newBackLeftTarget);
             backRightDrive.setTargetPosition(newBackRightTarget);
-
             // Turn On RUN_TO_POSITION
             frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             frontRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             backLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             backRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
             // reset the timeout time and start motion.
             runtime.reset();
             frontLeftDrive.setPower(Math.abs(speed));
             frontRightDrive.setPower(Math.abs(speed));
-
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
             // its target position, the motion will stop.  This is "safer" in the event that the robot will
@@ -172,13 +165,11 @@ public class DecodeAutonomus extends LinearOpMode {
             while (opModeIsActive() &&
                    (runtime.seconds() < timeoutS) &&
                    (frontLeftDrive.isBusy() && frontRightDrive.isBusy() && backLeftDrive.isBusy() && backRightDrive.isBusy())) {
-
                 // Display it for the driver.
                 telemetry.addData("Front motors running to",  " %7d :%7d", newFrontLeftTarget, newFrontRightTarget);
                 telemetry.addData("Front motors currently at",  " at %7d :%7d", frontLeftDrive.getCurrentPosition(), frontRightDrive.getCurrentPosition());
                 telemetry.addData("Back motors running to",  " %7d :%7d", newBackLeftTarget,  newBackRightTarget);
                 telemetry.addData("Front motors currently at",  " at %7d :%7d", backLeftDrive.getCurrentPosition(), backRightDrive.getCurrentPosition());
-
                 telemetry.update();
             }
 
@@ -187,15 +178,37 @@ public class DecodeAutonomus extends LinearOpMode {
             frontRightDrive.setPower(0);
             backLeftDrive.setPower(0);
             backRightDrive.setPower(0);
-
             // Turn off RUN_TO_POSITION
             frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
             RobotData.END_AUTO_HEADING = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
             sleep(250);   // optional pause after each move.
         }
     }
+    public void turnToHeading(int target_heading) {
+        double target_heading_radians = (float) (target_heading * 0.0174533);
+        double current_heading = imu.getRobotYawPitchRollAngles().getYaw();
+
+        double angle_error = target_heading_radians - current_heading;
+
+        double adjustment_turn_power = angle_error * TURN_SPEED;
+        adjustment_turn_power = Range.clip(adjustment_turn_power, -1.0, 1.0);
+
+        frontLeftDrive.setPower(adjustment_turn_power);
+        backLeftDrive.setPower(adjustment_turn_power);
+        frontRightDrive.setPower(-adjustment_turn_power);
+        backRightDrive.setPower(-adjustment_turn_power);
+
+        if (Math.abs(angle_error) < TURN_ANGLE_TOLERANCE) {
+            // Stop motors or transition to next action
+            frontLeftDrive.setPower(0);
+            backLeftDrive.setPower(0);
+            frontRightDrive.setPower(0);
+            backRightDrive.setPower(0);
+            // ... and so on for other motors
+        }
+    }
+
 }

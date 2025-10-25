@@ -28,12 +28,14 @@
  */
 package org.firstinspires.ftc.teamcode;
 
+
+
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -61,7 +63,7 @@ public class mainTeleOp extends OpMode {
     DcMotor backRightDrive;
 
     Intake intake;
-
+    Kicker kicker;
     Shooter shooter;
     // This declares the IMU needed to get the current direction the robot is facing
     IMU imu;
@@ -74,6 +76,7 @@ public class mainTeleOp extends OpMode {
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
         intake = new Intake(hardwareMap, gamepad1);
         shooter = new Shooter(hardwareMap, gamepad1);
+        kicker = new Kicker(hardwareMap, gamepad1);
 
         // We set the left motors in reverse which is needed for drive trains where the left
         // motors are opposite to the right ones.
@@ -107,8 +110,9 @@ public class mainTeleOp extends OpMode {
         telemetry.addLine("The left joystick sets the robot direction");
         telemetry.addLine("Moving the right joystick left and right turns the robot");
         telemetry.addLine("Current Robot Heading:" + imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+        telemetry.addLine(String.valueOf(kicker.kickerMotor.getCurrentPosition()));
 
-        // If you press the A button, then you reset the Yaw to be zero from the way
+        // If you press the [start] button, then you reset the Yaw to be zero from the way
         // the robot is currently pointing
         if (gamepad1.start) {
             imu.resetYaw();
@@ -122,7 +126,8 @@ public class mainTeleOp extends OpMode {
         }
         //Run one iteration of the intake loop code
         intake.tick();
-        shooter.tick(120);
+        kicker.tick();
+        shooter.tick(3600);
     }
 
     // This routine drives the robot field relative

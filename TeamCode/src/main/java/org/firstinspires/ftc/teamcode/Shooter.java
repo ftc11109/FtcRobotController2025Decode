@@ -15,11 +15,12 @@ public class Shooter {
     }
 
     public void tick(int rpm) {
-        if(gamepad.a) {
-            shooterMotor.setVelocity(28 * rpm / 60);
-        }
-        else {
+        if(gamepad.x) {
             shooterMotor.setVelocity(0);
+        }
+        else if(gamepad.a) {
+            //Positive is counterclockwise direction
+            shooterMotor.setVelocity(28 * rpm / 60);
         }
     }
 }
