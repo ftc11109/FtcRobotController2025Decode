@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
@@ -61,7 +62,7 @@ public class mainTeleOp extends OpMode {
     DcMotor frontRightDrive;
     DcMotor backLeftDrive;
     DcMotor backRightDrive;
-
+    public ElapsedTime runtime = new ElapsedTime();
     Intake intake;
     Kicker kicker;
     Shooter shooter;
@@ -76,7 +77,7 @@ public class mainTeleOp extends OpMode {
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
         intake = new Intake(hardwareMap, gamepad1);
         shooter = new Shooter(hardwareMap, gamepad1);
-        kicker = new Kicker(hardwareMap, gamepad1);
+        kicker = new Kicker(hardwareMap, gamepad1, runtime);
 
         // We set the left motors in reverse which is needed for drive trains where the left
         // motors are opposite to the right ones.
@@ -126,7 +127,7 @@ public class mainTeleOp extends OpMode {
         }
         //Run one iteration of the intake loop code
         intake.tick();
-        kicker.tick();
+        kicker.tick(false);
         shooter.tick(3600);
     }
 
