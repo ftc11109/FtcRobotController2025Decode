@@ -97,23 +97,78 @@ public class DecodeAutonomus extends LinearOpMode {
         RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu.initialize(new IMU.Parameters(revHubOrientationOnRobot));
 
+        String alliance = "";
+        String start_pos = "";
+        final int bestRoute = 2;
+        final int maxRoute = 4;
+        int selectedRoute = bestRoute;
         //Robot data class (for IMU direction)
+        while (!isStarted() && !isStopRequested()) {
+            //Alliance
+            telemetry.addLine("Alliance selection:");
+            telemetry.addLine("Press B for red alliance");
+            telemetry.addLine("Press X for blue alliance");
+            if (gamepad1.b) {
+                alliance = "Red";
+            }
+            if (gamepad1.x) {
+                alliance = "Blue";
+            }
+            if(alliance != "") {
+                telemetry.addLine(alliance + " alliance selected");
+            }
+            //Positioning
+            telemetry.addLine("Starting Position Selection:");
+            telemetry.addLine("Press Y for wall start");
+            telemetry.addLine("Press A for line start");
+            if (gamepad1.y) {
+                start_pos = "Wall";
+            }
+            if (gamepad1.a) {
+                start_pos = "Line";
+            }
+            if(start_pos != "") {
+                telemetry.addLine(start_pos + " starting position selected");
+            }
 
+            //Route selection
+            if(gamepad1.dpadUpWasPressed()) {
+                selectedRoute++;
+            }
+            if(gamepad1.dpadDownWasPressed()) {
+                selectedRoute--;
+            }
+            //Looping
+            if(selectedRoute > maxRoute) {
+                selectedRoute = 0;
+            }
+            if(selectedRoute < 0) {
+                selectedRoute = maxRoute;
+            }
+            telemetry.addLine("Selected: " +  selectedRoute);
+            telemetry.update();
 
+        }
         // Send telemetry message to indicate successful Encoder reset
-        telemetry.addData("Starting at",  "%7d :%7d :%7d :%7d",
-                frontLeftDrive.getCurrentPosition(),
-                frontRightDrive.getCurrentPosition(),
-                backLeftDrive.getCurrentPosition(),
-                backRightDrive.getCurrentPosition());
-        telemetry.update();
+//        telemetry.addData("Starting at",  "%7d :%7d :%7d :%7d",
+//                frontLeftDrive.getCurrentPosition(),
+//                frontRightDrive.getCurrentPosition(),
+//                backLeftDrive.getCurrentPosition(),
+//                backRightDrive.getCurrentPosition());
+//        telemetry.update();
 
         // Wait for the game to start (driver presses START)
         waitForStart();
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        encoderDrive(DRIVE_SPEED,  6,  6, 6, 6, 5.0);
+        if(alliance == "Red") {
+            //Red
+        }
+        else
+        {
 
+            //Blue alliance
+        }
 
         telemetry.addData("Path", "Complete");
         telemetry.addLine("Current Robot Heading:" + imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));

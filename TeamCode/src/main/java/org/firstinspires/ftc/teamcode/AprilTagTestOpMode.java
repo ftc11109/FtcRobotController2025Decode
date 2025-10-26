@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static java.lang.Math.abs;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -45,21 +47,41 @@ public class AprilTagTestOpMode extends OpMode {
                 // Access information about the detected tag
                 int tagId = detection.id;
                 String tagName = detection.metadata.name;
-                double xPosition = detection.ftcPose.x; // X position relative to the camera
+                double xPosition = detection.ftcPose.x;
+                double yPosition = detection.ftcPose.y;
+                double zPosition = detection.ftcPose.z;// X position relative to the camera
                 // ... and other pose data (y, z, yaw, pitch, roll)
 
                 // Implement logic based on the detected tag, e.g.,
-                // if (tagId == DESIRED_TAG_ID) {
-                //     // Perform actions based on this specific tag
-                // }
+                 if (tagId == 24) {
+                     // Perform actions based on this specific tag
+                     double offset_x = 0 - xPosition;
+                     double threshhold = 2;
+                     if(Math.abs(offset_x) < threshhold) {
+                         telemetry.addLine("Centered");
+                     }
+                     else if(offset_x < 0) {
+                         telemetry.addLine("Move Right");
+                     }
+                     else if(offset_x > 0) {
+                         telemetry.addLine("Move Left");
+                     }
+                 }
 
                 telemetry.addData("Tag ID", tagId);
                 telemetry.addData("Tag Name", tagName);
                 telemetry.addData("X", xPosition);
+                telemetry.addData("Y", yPosition);
+                telemetry.addData("Z", zPosition);
                 // Add more telemetry for other relevant data
             }
+            else {
+                telemetry.addLine("No Tag");
+            }
         }
+
         telemetry.update();
+
     }
 
 }
