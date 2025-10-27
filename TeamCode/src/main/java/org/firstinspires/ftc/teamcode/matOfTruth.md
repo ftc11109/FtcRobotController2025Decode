@@ -1,6 +1,6 @@
 ### Controls:
 
-## Gamepad 1:
+## Gamepad 1 (driver):
 # Joysticks:
 Left: Movement (field oriented)
 Right: X is turning, Y is [none]
@@ -14,6 +14,7 @@ A: Start Shooter Motor
 B: [none]
 Y: [none]
 X: Stop Shooter Motor
+Start: Reset Yaw
 # Bumpers:
 Left: [none]
 Right: [none]
@@ -21,7 +22,8 @@ Right: [none]
 Left: [none]
 Right: [none]
 
-## Gamepad 2:
+
+## Gamepad 2 (copilot):
 [none]
 
 ### Motors:
@@ -38,7 +40,7 @@ Right: [none]
 0: "intake_motor"
 1: "kicker_motor"
 2: "shooter_motor"
-3:
+3: [none]
 
 ## Info
 Shooter Motor ticks/revolution: 28
@@ -51,6 +53,10 @@ Shooter Motor ticks/revolution: 28
 4:
 5:
 
+### USB devices
+## Cameras
+USB 3.0 (marked F): "front cam"
+USB 2.0 (marked S): "shooter cam"
 ### Information:
 
 ## Wifi:

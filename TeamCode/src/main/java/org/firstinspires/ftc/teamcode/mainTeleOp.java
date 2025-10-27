@@ -28,18 +28,25 @@
  */
 package org.firstinspires.ftc.teamcode;
 
-
-
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import com.qualcomm.robotcore.hardware.IMU;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagPoseRaw;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+import java.util.List;
 
 /*
  * This OpMode illustrates how to program your robot to drive field relative.  This means
@@ -66,24 +73,26 @@ public class mainTeleOp extends OpMode {
     Intake intake;
     Kicker kicker;
     Shooter shooter;
+    String alliance = RobotData.ALLIANCE;
+    int allianceTag = alliance == "Red" ? 24 : 20;
     // This declares the IMU needed to get the current direction the robot is facing
     IMU imu;
+    //AprilTag objects
+    private VisionPortal shooterVisionPortal;
+    private AprilTagProcessor shooterTags;
 
     @Override
     public void init() {
+        //Motor setup
         frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
         frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
         backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
-        intake = new Intake(hardwareMap, gamepad1);
-        shooter = new Shooter(hardwareMap, gamepad1);
-        kicker = new Kicker(hardwareMap, gamepad1, runtime);
 
         // We set the left motors in reverse which is needed for drive trains where the left
         // motors are opposite to the right ones.
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-
 
         // This uses RUN_USING_ENCODER to be more accurate.   If you don't have the encoder
         // wires, you should remove these
@@ -92,6 +101,7 @@ public class mainTeleOp extends OpMode {
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        //IMU setup
         imu = hardwareMap.get(IMU.class, "imu");
         // This needs to be changed to match the orientation on your robot
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection =
@@ -102,18 +112,46 @@ public class mainTeleOp extends OpMode {
         RevHubOrientationOnRobot orientationOnRobot = new
                 RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
+
+        //Mechanism setup
+        intake = new Intake(hardwareMap, gamepad1);
+        shooter = new Shooter(hardwareMap, gamepad1);
+        kicker = new Kicker(hardwareMap, gamepad1, runtime);
+
+        //AprilTag setup
+        shooterTags = new AprilTagProcessor.Builder().build();
+        shooterVisionPortal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, "shooter cam")) // Replace "Webcam 1" with your camera name
+                .addProcessor(shooterTags)
+                .build();
     }
 
     @Override
     public void loop() {
-        telemetry.addLine("Press A to reset Yaw");
-        telemetry.addLine("Hold left bumper to drive in robot relative");
-        telemetry.addLine("The left joystick sets the robot direction");
-        telemetry.addLine("Moving the right joystick left and right turns the robot");
-        telemetry.addLine("Current Robot Heading:" + imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
-        telemetry.addLine(String.valueOf(kicker.kickerMotor.getCurrentPosition()));
+        List<AprilTagDetection> currentDetections = shooterTags.getDetections();
+        double goalTagX;
+        double goalTagY;
+        double goalTagZ;
+        if(currentDetections.size() > 0) {
+            //AprilTag stuff here
+            for(int i = 0; i < currentDetections.size(); i++) {
+                AprilTagDetection detection = currentDetections.get(i);
+                if(detection.id == allianceTag) {
+                    AprilTagPoseRaw pose = detection.rawPose;
+                    goalTagX = pose.x;
+                    goalTagY = pose.y;
+                    goalTagZ = pose.z;
+                    telemetry.addLine("Alliance AprilTag detected");
+                    telemetry.addData("XYZ data:", "%2d, %2d, %2d", goalTagX, goalTagY, goalTagZ);
+                }
+            }
+        }
+        else {
+            telemetry.addLine("No Tags");
+        }
 
-        // If you press the [start] button, then you reset the Yaw to be zero from the way
+
+        // If you press the start button, then you reset the Yaw to be zero from the way
         // the robot is currently pointing
         if (gamepad1.start) {
             imu.resetYaw();
@@ -126,9 +164,15 @@ public class mainTeleOp extends OpMode {
             driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         }
         //Run one iteration of the intake loop code
-        intake.tick();
+        intake.tick(0.6);
         kicker.tick(false);
         shooter.tick(3600);
+
+        telemetry.addLine("Press Start to reset Yaw");
+        telemetry.addLine("Hold left bumper to drive in robot relative");
+        telemetry.addLine("The left joystick drives the robot");
+        telemetry.addLine("Moving the right joystick left and right turns the robot");
+        telemetry.addLine("Current Robot Heading:" + imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
     }
 
     // This routine drives the robot field relative

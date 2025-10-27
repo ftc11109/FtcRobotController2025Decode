@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -11,6 +12,7 @@ public class Shooter {
     public Shooter(HardwareMap hardwareMap, Gamepad gamepad) {
         this.gamepad = gamepad;
         shooterMotor = hardwareMap.get(DcMotorEx.class, "shooter_motor");
+        shooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
     }
 
@@ -19,7 +21,7 @@ public class Shooter {
             shooterMotor.setVelocity(0);
         }
         else if(gamepad.a) {
-            //Positive is counterclockwise direction
+            //Positive is clockwise direction
             shooterMotor.setVelocity(28 * rpm / 60);
         }
     }

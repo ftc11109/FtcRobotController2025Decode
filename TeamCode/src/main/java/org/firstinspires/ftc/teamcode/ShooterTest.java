@@ -76,7 +76,7 @@ public class ShooterTest extends LinearOpMode {
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
-        ShooterDrive = hardwareMap.get(DcMotor.class, "shooter");
+        ShooterDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
 
         ShooterDrive.setDirection(DcMotor.Direction.FORWARD);
 

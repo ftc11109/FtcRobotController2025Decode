@@ -13,18 +13,18 @@ public class Intake {
         intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
     }
 
-    public void tick() {
+    public void tick(double speed) {
         if(gamepad.dpad_left) {
             //stop
             intakeMotor.setPower(0);
         }
         else if(gamepad.dpad_down) {
             //counterclockwise
-            intakeMotor.setPower(0.5);
+            intakeMotor.setPower(speed);
         }
         else if(gamepad.dpad_up) {
             //clockwise
-            intakeMotor.setPower(-0.5);
+            intakeMotor.setPower(-speed);
         }
     }
 }

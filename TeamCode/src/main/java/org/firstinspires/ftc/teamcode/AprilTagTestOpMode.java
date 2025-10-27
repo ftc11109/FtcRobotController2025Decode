@@ -31,7 +31,7 @@ public class AprilTagTestOpMode extends OpMode {
 
         // Create the VisionPortal, passing in the camera and the processor.
         visionPortal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1")) // Replace "Webcam 1" with your camera name
+                .setCamera(hardwareMap.get(WebcamName.class, "shooter cam")) // Replace "Webcam 1" with your camera name
                 .addProcessor(aprilTag)
                 .enableLiveView(true)
                 .build();

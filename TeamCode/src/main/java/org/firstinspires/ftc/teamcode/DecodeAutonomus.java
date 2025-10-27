@@ -29,15 +29,24 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.os.strictmode.DiskReadViolation;
+
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+import java.util.List;
 
 @Autonomous(name="Decode Autonomus", group="Robot")
 public class DecodeAutonomus extends LinearOpMode {
@@ -49,6 +58,14 @@ public class DecodeAutonomus extends LinearOpMode {
     DcMotor backRightDrive;
 
     IMU imu;
+
+    AprilTagProcessor frontTags;
+    AprilTagProcessor shooterTags;
+    VisionPortal frontPortal;
+    VisionPortal shooterPortal;
+
+    int ALLIANCE_TAG;
+
 
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -96,6 +113,25 @@ public class DecodeAutonomus extends LinearOpMode {
 
         RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu.initialize(new IMU.Parameters(revHubOrientationOnRobot));
+
+        //AprilTag setup
+        //Multi-camera stuff
+        int[] viewIds = VisionPortal.makeMultiPortalView(2, VisionPortal.MultiPortalLayout.VERTICAL);
+        int portalShooterViewId = viewIds[0];
+        int portalFrontViewId = viewIds[1];
+        //Individual cameras
+        shooterTags = new AprilTagProcessor.Builder().build();
+        shooterPortal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, "shooter cam"))
+                .setLiveViewContainerId(portalShooterViewId)
+                .addProcessor(shooterTags)
+                .build();
+        frontTags = new AprilTagProcessor.Builder().build();
+        frontPortal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, "front cam"))
+                .setLiveViewContainerId(portalFrontViewId)
+                .addProcessor(frontTags)
+                .build();
 
         String alliance = "";
         String start_pos = "";
@@ -145,10 +181,12 @@ public class DecodeAutonomus extends LinearOpMode {
             if(selectedRoute < 0) {
                 selectedRoute = maxRoute;
             }
+            telemetry.addLine("Use D-pad up and down to select route");
             telemetry.addLine("Selected: " +  selectedRoute);
             telemetry.update();
 
         }
+        ALLIANCE_TAG = alliance == "Red" ? 24 : 20;
         // Send telemetry message to indicate successful Encoder reset
 //        telemetry.addData("Starting at",  "%7d :%7d :%7d :%7d",
 //                frontLeftDrive.getCurrentPosition(),
@@ -162,13 +200,39 @@ public class DecodeAutonomus extends LinearOpMode {
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
         if(alliance == "Red") {
-            //Red
-        }
-        else
-        {
+            //Red alliance
+            RobotData.ALLIANCE = "Red";
+            if(start_pos == "wall") {
+                switch (selectedRoute) {
+                    case 0:
+                        encoderDrive(DRIVE_SPEED, 6, 6, 6, 6, 2);
+                        break;
+                    case 1:
+                        encoderDrive(DRIVE_SPEED, 6, 6, 6, 6, 2);
+                        int[] tags = getAprilTags(shooterTags);
+                        if(tags[0] != 0) {
+                            //Align to goal
+                        }
+                        //Shooter code here
+                }
+            }
+            else {
 
-            //Blue alliance
+            }
         }
+        else {
+            //Blue alliance
+            RobotData.ALLIANCE = "Blue";
+            if(start_pos == "wall") {
+
+            }
+            else {
+
+            }
+        }
+
+        shooterPortal.close();
+        frontPortal.close();
 
         telemetry.addData("Path", "Complete");
         telemetry.addLine("Current Robot Heading:" + imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
@@ -184,6 +248,29 @@ public class DecodeAutonomus extends LinearOpMode {
      *  2) Move runs out of time
      *  3) Driver stops the OpMode running.
      */
+
+    //Returns a list of the found AprilTag IDs
+    public int[] getAprilTags(AprilTagProcessor camera) {
+        List<AprilTagDetection> detections = camera.getDetections();
+        int[] tags = new int[0];
+        for(int i = 0; i < detections.size(); i++) {
+            AprilTagDetection detection = detections.get(i);
+            tags[i] = detection.id;
+        }
+
+        return tags;
+    }
+
+    public boolean alignToTag(AprilTagDetection tag) {
+        //Make sure we are looking at the alliance goal tag
+        if(tag.id == ALLIANCE_TAG) {
+            //Check X value
+        }
+        else {
+            return false;
+        }
+        return true;
+    }
     public void encoderDrive(double speed,
                              double frontLeftInches, double frontRightInches, double backLeftInches, double backRightInches,
                              double timeoutS) {
