@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-import static android.os.SystemClock.sleep;
+
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Kicker {
     private final Gamepad gamepad;
-    private ElapsedTime runtime;
+    final ElapsedTime runtime;
     private boolean wasPressed;
     private long motorTime = 500;
     private long motorStartTime = -motorTime;

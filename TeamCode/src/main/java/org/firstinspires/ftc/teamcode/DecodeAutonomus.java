@@ -29,13 +29,10 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import android.os.strictmode.DiskReadViolation;
-
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
@@ -46,6 +43,7 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
+import java.util.Collections;
 import java.util.List;
 
 @Autonomous(name="Decode Autonomus", group="Robot")
@@ -205,13 +203,17 @@ public class DecodeAutonomus extends LinearOpMode {
             if(start_pos == "wall") {
                 switch (selectedRoute) {
                     case 0:
+                        //Drive away from goal (get off line
                         encoderDrive(DRIVE_SPEED, 6, 6, 6, 6, 2);
                         break;
                     case 1:
+                        //Get into the rough aiming position
                         encoderDrive(DRIVE_SPEED, 6, 6, 6, 6, 2);
-                        int[] tags = getAprilTags(shooterTags);
-                        if(tags[0] != 0) {
+                        turnToHeading(90);
+                        List<AprilTagDetection> tags = getAprilTags(shooterTags);
+                        if(tags.size() > 0) {
                             //Align to goal
+                            alignToTag(tags.get(0));
                         }
                         //Shooter code here
                 }
@@ -224,10 +226,19 @@ public class DecodeAutonomus extends LinearOpMode {
             //Blue alliance
             RobotData.ALLIANCE = "Blue";
             if(start_pos == "wall") {
-
-            }
-            else {
-
+                switch (selectedRoute) {
+                    case 0:
+                        encoderDrive(DRIVE_SPEED, 6, 6, 6, 6, 2);
+                        break;
+                    case 1:
+                        encoderDrive(DRIVE_SPEED, 6, 6, 6, 6, 2);
+                        List<AprilTagDetection> tags = getAprilTags(shooterTags);
+                        if(tags.size() > 0) {
+                            //Align to goal
+                            alignToTag(tags.get(0));
+                        }
+                        //Shooter code here
+                }
             }
         }
 
@@ -240,22 +251,13 @@ public class DecodeAutonomus extends LinearOpMode {
         sleep(1000);  // pause to display final telemetry message.
     }
 
-    /*
-     *  Method to perform a relative move, based on encoder counts.
-     *  Encoders are not reset as the move is based on the current position.
-     *  Move will stop if any of three conditions occur:
-     *  1) Move gets to the desired position
-     *  2) Move runs out of time
-     *  3) Driver stops the OpMode running.
-     */
-
     //Returns a list of the found AprilTag IDs
-    public int[] getAprilTags(AprilTagProcessor camera) {
+    public List<AprilTagDetection> getAprilTags(AprilTagProcessor camera) {
         List<AprilTagDetection> detections = camera.getDetections();
-        int[] tags = new int[0];
+        List<AprilTagDetection> tags = Collections.emptyList();
         for(int i = 0; i < detections.size(); i++) {
             AprilTagDetection detection = detections.get(i);
-            tags[i] = detection.id;
+            tags.set(i, detection);
         }
 
         return tags;
@@ -265,12 +267,23 @@ public class DecodeAutonomus extends LinearOpMode {
         //Make sure we are looking at the alliance goal tag
         if(tag.id == ALLIANCE_TAG) {
             //Check X value
+            double x = tag.rawPose.x;
+            encoderDrive(DRIVE_SPEED, -x, x, -x, x, 50);
+            return true;
         }
         else {
             return false;
         }
-        return true;
     }
+
+    /*
+     *  Method to perform a relative move, based on encoder counts.
+     *  Encoders are not reset as the move is based on the current position.
+     *  Move will stop if any of three conditions occur:
+     *  1) Move gets to the desired position
+     *  2) Move runs out of time
+     *  3) Driver stops the OpMode running.
+     */
     public void encoderDrive(double speed,
                              double frontLeftInches, double frontRightInches, double backLeftInches, double backRightInches,
                              double timeoutS) {

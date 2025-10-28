@@ -26,3 +26,7 @@ android {
 dependencies {
     implementation project(':FtcRobotController')
 }
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '8.9' // Replace with your desired Gradle version
+}

@@ -62,3 +62,17 @@ USB 2.0 (marked S): "shooter cam"
 ## Wifi:
 Name: 11109-RC
 Password: TeamTekerz
+
+#### CONTAINMENT:
+
+DANGER --- DO NOT RELEASE
+
+   +--------------+
+  /|             /|
+ / |            / |
+*--+-----------*  |
+|  |     :3    |  |
+|  +-----------+--+
+| /            | /
+|/             |/
+*--------------*
