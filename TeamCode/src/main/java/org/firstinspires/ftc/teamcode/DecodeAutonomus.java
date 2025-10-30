@@ -266,6 +266,7 @@ public class DecodeAutonomus extends LinearOpMode {
             //Longer delay to let shooter regain speed
             sleep(500);
         }
+        shooterMotor.setVelocity(0);
     }
     //Returns a list of the found AprilTags as a list of AprilTag objects
     public List<AprilTagDetection> getAprilTags(AprilTagProcessor camera) {

@@ -165,7 +165,7 @@ public class mainTeleOp extends OpMode {
         }
         //Run one iteration of the intake loop code
         intake.tick(0.6);
-        kicker.tick(false);
+        kicker.tick(0.7);
         shooter.tick(3600);
 
         telemetry.addLine("Press Start to reset Yaw");

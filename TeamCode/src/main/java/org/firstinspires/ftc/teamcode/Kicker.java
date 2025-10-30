@@ -22,31 +22,19 @@ public class Kicker {
         this.runtime = runTime;
         this.gamepad = gamepad;
         kickerMotor = hardwareMap.get(DcMotor.class, "kicker_motor");
-        //Next three lines are for set distance mode (type = true)
-        kickerMotor.setTargetPosition(0);
-        kickerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        kickerMotor.setPower(0.6);
+        kickerMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        kickerMotor.setPower(0);
     }
-    //type: true = run 1/2 rotation, false, run for 0.5 seconds
-    public void tick(boolean type) {
-        if (type) {
-            if (gamepad.b && !this.wasPressed) {
-                //28 ticks/revolution
-                //kickerMotor.setTargetPosition(kickerMotor.getTargetPosition() + 14);
-                this.wasPressed = true;
-            } else {
-                this.wasPressed = false;
-            }
+
+    public void tick(double speed) {
+        if (gamepad.b) {
+            this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
+            kickerMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            kickerMotor.setPower(speed);
         }
-        else {
-            if (gamepad.b) {
-                this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
-                //The 5 is for gearing
-                kickerMotor.setTargetPosition(140 * 5);
-            }
-            if (runtime.now(TimeUnit.MILLISECONDS) - this.motorStartTime > motorTime) {
-                kickerMotor.setTargetPosition(0);
-            }
+        if (runtime.now(TimeUnit.MILLISECONDS) - this.motorStartTime > motorTime || kickerMotor.getCurrentPosition() > 14) {
+            kickerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            kickerMotor.setTargetPosition(0);
         }
     }
 }
