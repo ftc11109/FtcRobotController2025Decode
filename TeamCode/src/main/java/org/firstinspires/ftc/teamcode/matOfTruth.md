@@ -11,7 +11,7 @@ Left: Intake Stop
 Right: [none]
 # Buttons:
 A: Start Shooter Motor
-B: [none]
+B: Kick ball into shooter
 Y: [none]
 X: Stop Shooter Motor
 Start: Reset Yaw
@@ -31,8 +31,8 @@ Right: [none]
 ## Control Hub:
 
 0. "front_left_drive"
-1. "front_right_drive"
-2. "back_left_drive"
+1. "back_left_drive"
+2. "front_right_drive"
 3. "back_right_drive"
 
 ## Expansion Hub:

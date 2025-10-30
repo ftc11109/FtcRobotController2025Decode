@@ -22,7 +22,7 @@ public class Shooter {
         }
         else if(gamepad.a) {
             //Positive is clockwise direction
-            shooterMotor.setVelocity(28 * rpm / 60);
+            shooterMotor.setVelocity((double) (28 * rpm) / 60);
         }
     }
 }

@@ -33,6 +33,8 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
@@ -54,6 +56,8 @@ public class DecodeAutonomus extends LinearOpMode {
     DcMotor frontRightDrive;
     DcMotor backLeftDrive;
     DcMotor backRightDrive;
+    DcMotor kickerMotor;
+    DcMotorEx shooterMotor;
 
     IMU imu;
 
@@ -81,7 +85,6 @@ public class DecodeAutonomus extends LinearOpMode {
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
     static final double     TURN_ANGLE_TOLERANCE    = 0.25;
-
     @Override
     public void runOpMode() {
 
@@ -90,9 +93,12 @@ public class DecodeAutonomus extends LinearOpMode {
         frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
         backLeftDrive  = hardwareMap.get(DcMotor.class, "back_left_drive");
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+        kickerMotor = hardwareMap.get(DcMotor.class, "kicker_motor");
+        shooterMotor = hardwareMap.get(DcMotorEx.class, "shooter_motor");
 
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        shooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         frontLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -103,6 +109,9 @@ public class DecodeAutonomus extends LinearOpMode {
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        kickerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        shooterMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         imu = hardwareMap.get(IMU.class, "imu");
         // This needs to be changed to match the orientation on your robot
@@ -133,10 +142,11 @@ public class DecodeAutonomus extends LinearOpMode {
 
         String alliance = "";
         String start_pos = "";
-        final int bestRoute = 2;
-        final int maxRoute = 4;
+        final int bestRoute = 0;
+        final int maxRoute = 0;
         int selectedRoute = bestRoute;
-        //Robot data class (for IMU direction)
+
+        //Alliance and route selection
         while (!isStarted() && !isStopRequested()) {
             //Alliance
             telemetry.addLine("Alliance selection:");
@@ -185,13 +195,6 @@ public class DecodeAutonomus extends LinearOpMode {
 
         }
         ALLIANCE_TAG = alliance == "Red" ? 24 : 20;
-        // Send telemetry message to indicate successful Encoder reset
-//        telemetry.addData("Starting at",  "%7d :%7d :%7d :%7d",
-//                frontLeftDrive.getCurrentPosition(),
-//                frontRightDrive.getCurrentPosition(),
-//                backLeftDrive.getCurrentPosition(),
-//                backRightDrive.getCurrentPosition());
-//        telemetry.update();
 
         // Wait for the game to start (driver presses START)
         waitForStart();
@@ -216,6 +219,7 @@ public class DecodeAutonomus extends LinearOpMode {
                             alignToTag(tags.get(0));
                         }
                         //Shooter code here
+                        shootAll(5600);
                 }
             }
             else {
@@ -251,7 +255,19 @@ public class DecodeAutonomus extends LinearOpMode {
         sleep(1000);  // pause to display final telemetry message.
     }
 
-    //Returns a list of the found AprilTag IDs
+    public void shootAll(int rpm) {
+        shooterMotor.setVelocity(28 * rpm / 60);
+        for(int i = 0; i < 3; i++) {
+            //Kicker code
+            //Kicker in
+            //Delay
+            sleep(100);
+            //Kicker out
+            //Longer delay to let shooter regain speed
+            sleep(500);
+        }
+    }
+    //Returns a list of the found AprilTags as a list of AprilTag objects
     public List<AprilTagDetection> getAprilTags(AprilTagProcessor camera) {
         List<AprilTagDetection> detections = camera.getDetections();
         List<AprilTagDetection> tags = Collections.emptyList();
@@ -262,7 +278,11 @@ public class DecodeAutonomus extends LinearOpMode {
 
         return tags;
     }
-
+    /*
+    * Method to align the robot to a tag
+    * Returns false if the tag couldn't be found
+    * Utilizes the encoderDrive() method
+    */
     public boolean alignToTag(AprilTagDetection tag) {
         //Make sure we are looking at the alliance goal tag
         if(tag.id == ALLIANCE_TAG) {
@@ -319,7 +339,7 @@ public class DecodeAutonomus extends LinearOpMode {
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
             while (opModeIsActive() &&
                    (runtime.seconds() < timeoutS) &&
-                   (frontLeftDrive.isBusy() && frontRightDrive.isBusy() && backLeftDrive.isBusy() && backRightDrive.isBusy())) {
+                   (frontLeftDrive.isBusy() || frontRightDrive.isBusy() || backLeftDrive.isBusy() || backRightDrive.isBusy())) {
                 // Display it for the driver.
                 telemetry.addData("Front motors running to",  " %7d :%7d", newFrontLeftTarget, newFrontRightTarget);
                 telemetry.addData("Front motors currently at",  " at %7d :%7d", frontLeftDrive.getCurrentPosition(), frontRightDrive.getCurrentPosition());

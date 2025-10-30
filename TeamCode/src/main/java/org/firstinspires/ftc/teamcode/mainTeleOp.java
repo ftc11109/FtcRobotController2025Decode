@@ -53,7 +53,7 @@ import java.util.List;
  * that the robot drives the direction you push the joystick regardless of the current orientation
  * of the robot.
  *
- * This OpMode assumes that you have four mecanum wheels each on its own motor named:
+ * This OpMode assumes that you have four Mecanum wheels each on its own motor named:
  *   front_left_motor, front_right_motor, back_left_motor, back_right_motor
  *
  *   and that the left motors are flipped such that when they turn clockwise the wheel moves backwards
@@ -107,7 +107,7 @@ public class mainTeleOp extends OpMode {
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection =
                 RevHubOrientationOnRobot.LogoFacingDirection.UP;
         RevHubOrientationOnRobot.UsbFacingDirection usbDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+                RevHubOrientationOnRobot.UsbFacingDirection.LEFT;
 
         RevHubOrientationOnRobot orientationOnRobot = new
                 RevHubOrientationOnRobot(logoDirection, usbDirection);
