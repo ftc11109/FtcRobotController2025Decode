@@ -32,6 +32,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -168,11 +170,20 @@ public class mainTeleOp extends OpMode {
         kicker.tick(0.7);
         shooter.tick(3600);
 
+//        if(gamepad1.b) {
+//                kicker.goToPosition(24);
+//        }
+
         telemetry.addLine("Press Start to reset Yaw");
         telemetry.addLine("Hold left bumper to drive in robot relative");
         telemetry.addLine("The left joystick drives the robot");
         telemetry.addLine("Moving the right joystick left and right turns the robot");
         telemetry.addLine("Current Robot Heading:" + imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+        telemetry.addLine("Kicker Encoder Reading: " + kicker.kickerMotor.getCurrentPosition());
+        PIDCoefficients currentPID = kicker.kickerMotor.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+        telemetry.addLine("P: " + currentPID.p);
+        telemetry.addLine("I: " + currentPID.i);
+        telemetry.addLine("D: " + currentPID.d);
     }
 
     // This routine drives the robot field relative
