@@ -5,26 +5,34 @@
 Left: Movement (field oriented)
 Right: X is turning, Y is [none]
 # D-pad:
-Up: Intake in
-Down: Intake Out
-Left: Intake Stop
-Right: [none]
+[none]
 # Buttons:
 A: Start Shooter Motor
-B: Kick ball into shooter
+B: [none]
 Y: [none]
 X: Stop Shooter Motor
 Start: Reset Yaw
 # Bumpers:
 Left: [none]
-Right: [none]
+Right: Shoot
 # Triggers
 Left: [none]
 Right: [none]
 
 
 ## Gamepad 2 (copilot):
+# Joysticks:
 [none]
+# D-pad:
+[none]
+# Buttons:
+[none]
+# Bumpers:
+Left: [none]
+Right: Intake In
+# Triggers
+Left: [none]
+Right: Intake Out
 
 ### Motors:
 

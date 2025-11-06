@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -11,20 +12,22 @@ public class Intake {
     public Intake(HardwareMap hardwareMap, Gamepad gamepad) {
         this.gamepad = gamepad;
         intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
+        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     public void tick(double speed) {
-        if(gamepad.dpad_left) {
-            //stop
-            intakeMotor.setPower(0);
-        }
-        else if(gamepad.dpad_down) {
+        if(gamepad.right_trigger > 0.25) {
+            //in
             //counterclockwise
             intakeMotor.setPower(speed);
         }
-        else if(gamepad.dpad_up) {
+        else if(gamepad.right_bumper) {
+            //out
             //clockwise
             intakeMotor.setPower(-speed);
+        }
+        else {
+            intakeMotor.setPower(0);
         }
     }
 }

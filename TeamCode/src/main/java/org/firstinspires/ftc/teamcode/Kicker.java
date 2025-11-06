@@ -59,7 +59,7 @@ public class Kicker {
 //            kickerMotor.setPower(0);
 //            this.runningKicker = false;
 //        }
-        if(gamepad.b && !gamepad.bWasPressed() && !runningKicker) {
+        if(gamepad.right_bumper && !gamepad.rightBumperWasPressed() && !runningKicker) {
             kickerMotor.setTargetPosition(27);
             this.runningKicker = true;
         }

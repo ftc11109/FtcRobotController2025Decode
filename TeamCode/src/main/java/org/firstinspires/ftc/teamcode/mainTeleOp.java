@@ -64,7 +64,7 @@ import java.util.List;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  *
  */
-@TeleOp(name = "Uncover the TeleOp", group = "Robot")
+@TeleOp(name = "Decode TeleOp", group = "Robot")
 public class mainTeleOp extends OpMode {
     // This declares the four motors needed
     DcMotor frontLeftDrive;
@@ -83,6 +83,7 @@ public class mainTeleOp extends OpMode {
     private VisionPortal shooterVisionPortal;
     private AprilTagProcessor shooterTags;
 
+    //Advanced setup of objects
     @Override
     public void init() {
         //Motor setup
@@ -111,25 +112,26 @@ public class mainTeleOp extends OpMode {
         RevHubOrientationOnRobot.UsbFacingDirection usbDirection =
                 RevHubOrientationOnRobot.UsbFacingDirection.LEFT;
 
-        RevHubOrientationOnRobot orientationOnRobot = new
-                RevHubOrientationOnRobot(logoDirection, usbDirection);
-        imu.initialize(new IMU.Parameters(orientationOnRobot));
+            RevHubOrientationOnRobot revHubOrientationOnRobot = new
+                    RevHubOrientationOnRobot(logoDirection, usbDirection);
+        imu.initialize(new IMU.Parameters(revHubOrientationOnRobot));
 
         //Mechanism setup
-        intake = new Intake(hardwareMap, gamepad1);
+        intake = new Intake(hardwareMap, gamepad2);
         shooter = new Shooter(hardwareMap, gamepad1);
         kicker = new Kicker(hardwareMap, gamepad1, runtime);
 
         //AprilTag setup
         shooterTags = new AprilTagProcessor.Builder().build();
         shooterVisionPortal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "shooter cam")) // Replace "Webcam 1" with your camera name
+                .setCamera(hardwareMap.get(WebcamName.class, "shooter cam"))
                 .addProcessor(shooterTags)
                 .build();
     }
 
     @Override
     public void loop() {
+        //AprilTag detections
         List<AprilTagDetection> currentDetections = shooterTags.getDetections();
         double goalTagX;
         double goalTagY;
@@ -168,7 +170,7 @@ public class mainTeleOp extends OpMode {
         //Run one iteration of the intake loop code
         intake.tick(0.6);
         kicker.tick(0.7);
-        shooter.tick(3600);
+        shooter.tick(3725, 5000, 0.625);
 
 //        if(gamepad1.b) {
 //                kicker.goToPosition(24);

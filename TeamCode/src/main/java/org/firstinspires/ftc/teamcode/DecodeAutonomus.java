@@ -110,8 +110,8 @@ public class DecodeAutonomus extends LinearOpMode {
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        kickerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        shooterMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+//        kickerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        shooterMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         imu = hardwareMap.get(IMU.class, "imu");
         // This needs to be changed to match the orientation on your robot
@@ -199,52 +199,53 @@ public class DecodeAutonomus extends LinearOpMode {
         // Wait for the game to start (driver presses START)
         waitForStart();
         // Step through each leg of the path,
+        encoderDrive(DRIVE_SPEED, -6, -6, -6, -6, 4);
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        if(alliance == "Red") {
-            //Red alliance
-            RobotData.ALLIANCE = "Red";
-            if(start_pos == "wall") {
-                switch (selectedRoute) {
-                    case 0:
-                        //Drive away from goal (get off line
-                        encoderDrive(DRIVE_SPEED, 6, 6, 6, 6, 2);
-                        break;
-                    case 1:
-                        //Get into the rough aiming position
-                        encoderDrive(DRIVE_SPEED, 6, 6, 6, 6, 2);
-                        turnToHeading(90);
-                        List<AprilTagDetection> tags = getAprilTags(shooterTags);
-                        if(tags.size() > 0) {
-                            //Align to goal
-                            alignToTag(tags.get(0));
-                        }
-                        //Shooter code here
-                        shootAll(5600);
-                }
-            }
-            else {
-
-            }
-        }
-        else {
-            //Blue alliance
-            RobotData.ALLIANCE = "Blue";
-            if(start_pos == "wall") {
-                switch (selectedRoute) {
-                    case 0:
-                        encoderDrive(DRIVE_SPEED, 6, 6, 6, 6, 2);
-                        break;
-                    case 1:
-                        encoderDrive(DRIVE_SPEED, 6, 6, 6, 6, 2);
-                        List<AprilTagDetection> tags = getAprilTags(shooterTags);
-                        if(tags.size() > 0) {
-                            //Align to goal
-                            alignToTag(tags.get(0));
-                        }
-                        //Shooter code here
-                }
-            }
-        }
+//        if(alliance == "Red") {
+//            //Red alliance
+//            RobotData.ALLIANCE = "Red";
+//            if(start_pos == "wall") {
+//                switch (selectedRoute) {
+//                    case 0:
+//                        //Drive away from goal (get off line
+//                        encoderDrive(DRIVE_SPEED, -6, -6, -6, -6, 2);
+//                        break;
+//                    case 1:
+//                        //Get into the rough aiming position
+//                        encoderDrive(DRIVE_SPEED, -6, -6, -6, -6, 2);
+//                        turnToHeading(90);
+//                        List<AprilTagDetection> tags = getAprilTags(shooterTags);
+//                        if(tags.size() > 0) {
+//                            //Align to goal
+//                            alignToTag(tags.get(0));
+//                        }
+//                        //Shooter code here
+//                        shootAll(5600);
+//                }
+//            }
+//            else {
+//
+//            }
+//        }
+//        else {
+//            //Blue alliance
+//            RobotData.ALLIANCE = "Blue";
+//            if(start_pos == "wall") {
+//                switch (selectedRoute) {
+//                    case 0:
+//                        encoderDrive(DRIVE_SPEED, -6, -6, -6, -6, 2);
+//                        break;
+//                    case 1:
+//                        encoderDrive(DRIVE_SPEED, -6, -6, -6, -6, 2);
+//                        List<AprilTagDetection> tags = getAprilTags(shooterTags);
+//                        if(tags.size() > 0) {
+//                            //Align to goal
+//                            alignToTag(tags.get(0));
+//                        }
+//                        //Shooter code here
+//                }
+//            }
+//        }
 
         shooterPortal.close();
         frontPortal.close();
@@ -268,7 +269,7 @@ public class DecodeAutonomus extends LinearOpMode {
         }
         shooterMotor.setVelocity(0);
     }
-    //Returns a list of the found AprilTags as a list of AprilTag objects
+    //Returns a list of the found AprilTags as a list of AprilTagDetection objects
     public List<AprilTagDetection> getAprilTags(AprilTagProcessor camera) {
         List<AprilTagDetection> detections = camera.getDetections();
         List<AprilTagDetection> tags = Collections.emptyList();
@@ -332,6 +333,8 @@ public class DecodeAutonomus extends LinearOpMode {
             runtime.reset();
             frontLeftDrive.setPower(Math.abs(speed));
             frontRightDrive.setPower(Math.abs(speed));
+            backRightDrive.setPower(Math.abs(speed));
+            backLeftDrive.setPower(Math.abs(speed));
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
             // its target position, the motion will stop.  This is "safer" in the event that the robot will
