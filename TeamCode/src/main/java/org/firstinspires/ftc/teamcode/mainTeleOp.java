@@ -170,7 +170,7 @@ public class mainTeleOp extends OpMode {
         //Run one iteration of the intake loop code
         intake.tick(0.6);
         kicker.tick(0.7);
-        shooter.tick(3725, 5000, 0.625);
+        shooter.tick(3125, 5000, 1);
 
 //        if(gamepad1.b) {
 //                kicker.goToPosition(24);
