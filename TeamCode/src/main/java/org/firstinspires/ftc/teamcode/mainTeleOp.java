@@ -75,6 +75,7 @@ public class mainTeleOp extends OpMode {
     Intake intake;
     Kicker kicker;
     Shooter shooter;
+    public Gate gate;
     String alliance = RobotData.ALLIANCE;
     int allianceTag = alliance == "Red" ? 24 : 20;
     // This declares the IMU needed to get the current direction the robot is facing
@@ -117,8 +118,9 @@ public class mainTeleOp extends OpMode {
         imu.initialize(new IMU.Parameters(revHubOrientationOnRobot));
 
         //Mechanism setup
+        gate = new Gate(hardwareMap);
         intake = new Intake(hardwareMap, gamepad2);
-        shooter = new Shooter(hardwareMap, gamepad1);
+        shooter = new Shooter(hardwareMap, gamepad1, gate);
         kicker = new Kicker(hardwareMap, gamepad1, runtime);
 
         //AprilTag setup
@@ -170,7 +172,7 @@ public class mainTeleOp extends OpMode {
         //Run one iteration of the intake loop code
         intake.tick(0.6);
         kicker.tick(0.7);
-        shooter.tick(3125, 5000, 1);
+        shooter.tick(2850, 5000, 1);
 
 //        if(gamepad1.b) {
 //                kicker.goToPosition(24);
@@ -182,10 +184,14 @@ public class mainTeleOp extends OpMode {
         telemetry.addLine("Moving the right joystick left and right turns the robot");
         telemetry.addLine("Current Robot Heading:" + imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
         telemetry.addLine("Kicker Encoder Reading: " + kicker.kickerMotor.getCurrentPosition());
-        PIDCoefficients currentPID = kicker.kickerMotor.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
-        telemetry.addLine("P: " + currentPID.p);
-        telemetry.addLine("I: " + currentPID.i);
-        telemetry.addLine("D: " + currentPID.d);
+        telemetry.addLine("Current Shooter RPM: " + shooter.shooterMotor.getVelocity() / 60 * 28);
+        telemetry.addLine("Kicker State: " + kicker.state);
+        telemetry.addLine();
+        //telemetry.addLine("Target Shooter Speed: " + shooter.shooterMotor.get);
+//        PIDCoefficients currentPID = kicker.kickerMotor.getPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+//        telemetry.addLine("P: " + currentPID.p);
+//        telemetry.addLine("I: " + currentPID.i);
+//        telemetry.addLine("D: " + currentPID.d);
     }
 
     // This routine drives the robot field relative

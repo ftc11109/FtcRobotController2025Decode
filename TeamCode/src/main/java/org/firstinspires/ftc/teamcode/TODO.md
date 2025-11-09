@@ -1,5 +1,5 @@
 AUTOS (ORDER DOES NOT MATTER e.g. 2. could be shoot and move off line, NO SET ORDER)
-1. Move off the line
+1. Move off the line (DONE)
 2. move off the line and shoot
 3. shoot, pickup a set of balls (make sure off line)
 4. shoot, pickup, shoot, off line
@@ -13,10 +13,12 @@ DONE STUFF:
 * Intake code (both directions)
 * Kicker code (run to a certain pos., then come back to home)
 * Mecanum field-orientated drive
-
-TODO (FOR NEXT COMP.):
 * Route wires
 * Polycarb ramp for transfer
+
+TODO (FOR NEXT COMP.):
+* Servo (ramp for limiting balls)
+* Dial in shooter
 
 FUTURE THINGS:
 * Less basic auto

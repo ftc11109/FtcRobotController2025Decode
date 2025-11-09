@@ -24,6 +24,7 @@ public class Kicker {
     private long stopTime;
     final long motorTime = 125;
     private long motorStartTime = -motorTime;
+    public String state = "IDLE";
 
     DcMotorEx kickerMotor;
     public Kicker(HardwareMap hardwareMap, Gamepad gamepad, ElapsedTime runTime) {
@@ -35,8 +36,8 @@ public class Kicker {
         kickerMotor.setPIDCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pid);
         kickerMotor.setTargetPosition(0);
         kickerMotor.setTargetPositionTolerance(5);
-        kickerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        kickerMotor.setPower(1);
+        kickerMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //kickerMotor.setPower(1);
     }
 
     public void tick(double speed) {
@@ -59,14 +60,21 @@ public class Kicker {
 //            kickerMotor.setPower(0);
 //            this.runningKicker = false;
 //        }
-        if(gamepad.right_bumper && !gamepad.rightBumperWasPressed() && !runningKicker) {
-            kickerMotor.setTargetPosition(27);
-            this.runningKicker = true;
+        if (gamepad.right_bumper && !gamepad.rightBumperWasPressed() && this.state == "IDLE") {
+            this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
+            this.state = "KICKING";
+            kickerMotor.setPower(1);
         }
-        else if(runningKicker && kickerMotor.getCurrentPosition() > 27) {
-            kickerMotor.setTargetPosition(0);
-            this.runningKicker = false;
+        if(runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + 250 && this.state == "KICKING") {
+            this.state = "RETURNING";
+            kickerMotor.setPower(-1);
+            this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
         }
+        if(this.runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + 270 && this.state == "RETURNING") {
+            this.state = "IDLE";
+            kickerMotor.setPower(-0.02);
+        }
+
     }
 //    public void goToPosition(int pos) {
 //        kickerMotor.setTargetPosition(pos);
