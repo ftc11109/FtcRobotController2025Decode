@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class Intake {
     private final Gamepad gamepad;
     DcMotor intakeMotor;
+    public double speed = 0.6;
 
     public Intake(HardwareMap hardwareMap, Gamepad gamepad) {
         this.gamepad = gamepad;
@@ -15,7 +16,7 @@ public class Intake {
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
-    public void tick(double speed) {
+    public void tick() {
         if(gamepad.right_trigger > 0.25) {
             //in
             //counterclockwise

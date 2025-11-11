@@ -20,16 +20,16 @@ import java.util.concurrent.TimeUnit;
 public class Kicker {
     private final Gamepad gamepad;
     final ElapsedTime runtime;
-    private boolean runningKicker;
-    private long stopTime;
+    private boolean isAutonomous;
     final long motorTime = 125;
     private long motorStartTime = -motorTime;
     public String state = "IDLE";
 
     DcMotorEx kickerMotor;
-    public Kicker(HardwareMap hardwareMap, Gamepad gamepad, ElapsedTime runTime) {
+    public Kicker(HardwareMap hardwareMap, Gamepad gamepad, ElapsedTime runTime, boolean isAutonomous) {
         this.runtime = runTime;
         this.gamepad = gamepad;
+        this.isAutonomous = isAutonomous;
         kickerMotor = hardwareMap.get(DcMotorEx.class, "kicker_motor");
         PIDCoefficients pid = new PIDCoefficients(20, 3, 5);
         kickerMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -40,26 +40,7 @@ public class Kicker {
         //kickerMotor.setPower(1);
     }
 
-    public void tick(double speed) {
-//        if (gamepad.b && !this.runningKicker) {
-//            this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
-//            this.runningKicker = true;
-//            kickerMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//            kickerMotor.setPower(speed);
-//        }
-//        if (runtime.now(TimeUnit.MILLISECONDS) - this.motorStartTime > motorTime || kickerMotor.getCurrentPosition() >= 24) {
-//            kickerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//            kickerMotor.setPower(0);
-//            this.stopTime = runtime.now(TimeUnit.MILLISECONDS);
-//        }
-//        if(runtime.now(TimeUnit.MILLISECONDS) + 1000 > this.stopTime) {
-//            kickerMotor.setPower(0.4);
-//            kickerMotor.setTargetPosition(0);
-//        }
-//        if((Math.abs(0 - kickerMotor.getCurrentPosition()) < 2 && kickerMotor.getTargetPosition() == 0) || runtime.now(TimeUnit.MILLISECONDS) > motorTime * 2) {
-//            kickerMotor.setPower(0);
-//            this.runningKicker = false;
-//        }
+    public void tick() {
         if (gamepad.right_bumper && !gamepad.rightBumperWasPressed() && this.state == "IDLE") {
             this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
             this.state = "KICKING";
@@ -76,9 +57,22 @@ public class Kicker {
         }
 
     }
-//    public void goToPosition(int pos) {
-//        kickerMotor.setTargetPosition(pos);
-//        //kickerMotor.setTargetPosition(0);
-//
-//    }
+    public void kick() {
+        if(isAutonomous) {
+            if (this.state == "IDLE") {
+                this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
+                this.state = "KICKING";
+                kickerMotor.setPower(1);
+            }
+            if(runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + 250 && this.state == "KICKING") {
+                this.state = "RETURNING";
+                kickerMotor.setPower(-1);
+                this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
+            }
+            if(runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + 270 && this.state == "RETURNING") {
+                this.state = "IDLE";
+                kickerMotor.setPower(-0.02);
+            }
+        }
+    }
 }

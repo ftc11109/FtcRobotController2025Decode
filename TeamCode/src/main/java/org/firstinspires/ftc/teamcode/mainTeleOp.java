@@ -118,10 +118,10 @@ public class mainTeleOp extends OpMode {
         imu.initialize(new IMU.Parameters(revHubOrientationOnRobot));
 
         //Mechanism setup
-        gate = new Gate(hardwareMap);
         intake = new Intake(hardwareMap, gamepad2);
-        shooter = new Shooter(hardwareMap, gamepad1, gate);
-        kicker = new Kicker(hardwareMap, gamepad1, runtime);
+        shooter = new Shooter(hardwareMap, gamepad1, gate, false);
+        kicker = new Kicker(hardwareMap, gamepad1, runtime, false);
+        gate = new Gate(hardwareMap);
 
         //AprilTag setup
         shooterTags = new AprilTagProcessor.Builder().build();
@@ -170,9 +170,15 @@ public class mainTeleOp extends OpMode {
             driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         }
         //Run one iteration of the intake loop code
-        intake.tick(0.6);
-        kicker.tick(0.7);
-        shooter.tick(2850, 5000, 1);
+        intake.tick();
+        kicker.tick();
+        shooter.tick();
+        if(gamepad1.dpad_up) {
+            gate.gateUp();
+        }
+        if(gamepad1.dpad_down) {
+            gate.gateDown();
+        }
 
 //        if(gamepad1.b) {
 //                kicker.goToPosition(24);

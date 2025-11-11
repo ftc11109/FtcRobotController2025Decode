@@ -19,9 +19,9 @@ DONE STUFF:
 TODO (FOR NEXT COMP.):
 * Servo (ramp for limiting balls)
 * Dial in shooter
+* Less basic auto
 
 FUTURE THINGS:
-* Less basic auto
 * Really less basic auto
 * Not even remotely close to basic auto
 

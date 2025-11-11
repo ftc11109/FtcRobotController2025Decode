@@ -52,13 +52,14 @@ import java.util.List;
 public class DecodeAutonomus extends LinearOpMode {
 
     /* Declare OpMode members. */
+    private ElapsedTime runtime = new ElapsedTime();
     DcMotor frontLeftDrive;
     DcMotor frontRightDrive;
     DcMotor backLeftDrive;
     DcMotor backRightDrive;
-    DcMotor kickerMotor;
-    DcMotorEx shooterMotor;
-
+    Gate gate;
+    Kicker kicker;
+    Shooter shooter;
     IMU imu;
 
     AprilTagProcessor frontTags;
@@ -67,9 +68,6 @@ public class DecodeAutonomus extends LinearOpMode {
     VisionPortal shooterPortal;
 
     int ALLIANCE_TAG;
-
-
-    private ElapsedTime runtime = new ElapsedTime();
 
     // Calculate the COUNTS_PER_INCH for your specific drive train.
     // Go to your motor vendor website to determine your motor's COUNTS_PER_MOTOR_REV
@@ -93,12 +91,9 @@ public class DecodeAutonomus extends LinearOpMode {
         frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
         backLeftDrive  = hardwareMap.get(DcMotor.class, "back_left_drive");
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
-        kickerMotor = hardwareMap.get(DcMotor.class, "kicker_motor");
-        shooterMotor = hardwareMap.get(DcMotorEx.class, "shooter_motor");
 
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        shooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         frontLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -110,8 +105,9 @@ public class DecodeAutonomus extends LinearOpMode {
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-//        kickerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        shooterMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        gate = new Gate(hardwareMap);
+        kicker = new Kicker(hardwareMap, null, runtime, true);
+        shooter = new Shooter(hardwareMap, null, null, true);
 
         imu = hardwareMap.get(IMU.class, "imu");
         // This needs to be changed to match the orientation on your robot
@@ -143,7 +139,7 @@ public class DecodeAutonomus extends LinearOpMode {
         String alliance = "";
         String start_pos = "";
         final int bestRoute = 0;
-        final int maxRoute = 0;
+        final int maxRoute = 1;
         int selectedRoute = bestRoute;
 
         //Alliance and route selection
@@ -164,12 +160,12 @@ public class DecodeAutonomus extends LinearOpMode {
             //Positioning
             telemetry.addLine("Starting Position Selection:");
             telemetry.addLine("Press Y for wall start");
-            telemetry.addLine("Press A for line start");
+            telemetry.addLine("Press A for goal start");
             if (gamepad1.y) {
                 start_pos = "Wall";
             }
             if (gamepad1.a) {
-                start_pos = "Line";
+                start_pos = "Goal";
             }
             if(start_pos != "") {
                 telemetry.addLine(start_pos + " starting position selected");
@@ -199,53 +195,29 @@ public class DecodeAutonomus extends LinearOpMode {
         // Wait for the game to start (driver presses START)
         waitForStart();
         // Step through each leg of the path,
-        encoderDrive(DRIVE_SPEED, -6, -6, -6, -6, 4);
-        // Note: Reverse movement is obtained by setting a negative distance (not speed)
-//        if(alliance == "Red") {
-//            //Red alliance
-//            RobotData.ALLIANCE = "Red";
-//            if(start_pos == "wall") {
-//                switch (selectedRoute) {
-//                    case 0:
-//                        //Drive away from goal (get off line
-//                        encoderDrive(DRIVE_SPEED, -6, -6, -6, -6, 2);
-//                        break;
-//                    case 1:
-//                        //Get into the rough aiming position
-//                        encoderDrive(DRIVE_SPEED, -6, -6, -6, -6, 2);
-//                        turnToHeading(90);
-//                        List<AprilTagDetection> tags = getAprilTags(shooterTags);
-//                        if(tags.size() > 0) {
-//                            //Align to goal
-//                            alignToTag(tags.get(0));
-//                        }
-//                        //Shooter code here
-//                        shootAll(5600);
-//                }
-//            }
-//            else {
-//
-//            }
-//        }
-//        else {
-//            //Blue alliance
-//            RobotData.ALLIANCE = "Blue";
-//            if(start_pos == "wall") {
-//                switch (selectedRoute) {
-//                    case 0:
-//                        encoderDrive(DRIVE_SPEED, -6, -6, -6, -6, 2);
-//                        break;
-//                    case 1:
-//                        encoderDrive(DRIVE_SPEED, -6, -6, -6, -6, 2);
-//                        List<AprilTagDetection> tags = getAprilTags(shooterTags);
-//                        if(tags.size() > 0) {
-//                            //Align to goal
-//                            alignToTag(tags.get(0));
-//                        }
-//                        //Shooter code here
-//                }
-//            }
-//        }
+        switch (selectedRoute) {
+            case 0:
+                if(start_pos == "Goal") {
+                    encoderDrive(DRIVE_SPEED, -6, -6, -6, -6, 2, "Driving from goal");
+                }
+                else if(start_pos == "Wall") {
+                    encoderDrive(DRIVE_SPEED, 6, 6, 6, 6, 2, "Driving off of wall");
+                }
+                break;
+            case 1:
+                //Move away from goal
+                encoderDrive(DRIVE_SPEED, -60,-60, -60, -60, 10, "Driving from goal");
+                //Turn shooter towards goal
+                turnToHeading(90, "Turning towards goal");
+                //Spin up shooter and wait for it to spin up
+                shooter.startClose();
+                while(shooter.shooterMotor.getVelocity() - 10 < shooter.targetTps) {
+                    telemetry.addLine("Spinning up shooter");
+                }
+                //Kick!
+                kicker.kick();
+
+        }
 
         shooterPortal.close();
         frontPortal.close();
@@ -254,20 +226,6 @@ public class DecodeAutonomus extends LinearOpMode {
         telemetry.addLine("Current Robot Heading:" + imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
         telemetry.update();
         sleep(1000);  // pause to display final telemetry message.
-    }
-
-    public void shootAll(int rpm) {
-        shooterMotor.setVelocity(28 * rpm / 60);
-        for(int i = 0; i < 3; i++) {
-            //Kicker code
-            //Kicker in
-            //Delay
-            sleep(100);
-            //Kicker out
-            //Longer delay to let shooter regain speed
-            sleep(500);
-        }
-        shooterMotor.setVelocity(0);
     }
     //Returns a list of the found AprilTags as a list of AprilTagDetection objects
     public List<AprilTagDetection> getAprilTags(AprilTagProcessor camera) {
@@ -290,7 +248,7 @@ public class DecodeAutonomus extends LinearOpMode {
         if(tag.id == ALLIANCE_TAG) {
             //Check X value
             double x = tag.rawPose.x;
-            encoderDrive(DRIVE_SPEED, -x, x, -x, x, 50);
+            encoderDrive(DRIVE_SPEED, -x, x, -x, x, 50, "Rotating to tag" + tag.id);
             return true;
         }
         else {
@@ -308,7 +266,8 @@ public class DecodeAutonomus extends LinearOpMode {
      */
     public void encoderDrive(double speed,
                              double frontLeftInches, double frontRightInches, double backLeftInches, double backRightInches,
-                             double timeoutS) {
+                             double timeoutS,
+                             String message) {
         int newFrontLeftTarget;
         int newFrontRightTarget;
         int newBackLeftTarget;
@@ -345,10 +304,7 @@ public class DecodeAutonomus extends LinearOpMode {
                    (runtime.seconds() < timeoutS) &&
                    (frontLeftDrive.isBusy() || frontRightDrive.isBusy() || backLeftDrive.isBusy() || backRightDrive.isBusy())) {
                 // Display it for the driver.
-                telemetry.addData("Front motors running to",  " %7d :%7d", newFrontLeftTarget, newFrontRightTarget);
-                telemetry.addData("Front motors currently at",  " at %7d :%7d", frontLeftDrive.getCurrentPosition(), frontRightDrive.getCurrentPosition());
-                telemetry.addData("Back motors running to",  " %7d :%7d", newBackLeftTarget,  newBackRightTarget);
-                telemetry.addData("Front motors currently at",  " at %7d :%7d", backLeftDrive.getCurrentPosition(), backRightDrive.getCurrentPosition());
+                telemetry.addLine(message);
                 telemetry.update();
             }
 
@@ -366,7 +322,7 @@ public class DecodeAutonomus extends LinearOpMode {
             sleep(250);   // optional pause after each move.
         }
     }
-    public void turnToHeading(int target_heading) {
+    public void turnToHeading(int target_heading, String message) {
         double target_heading_radians = (float) (target_heading * 0.0174533);
         double current_heading = imu.getRobotYawPitchRollAngles().getYaw();
 
@@ -379,15 +335,14 @@ public class DecodeAutonomus extends LinearOpMode {
         backLeftDrive.setPower(adjustment_turn_power);
         frontRightDrive.setPower(-adjustment_turn_power);
         backRightDrive.setPower(-adjustment_turn_power);
-
-        if (Math.abs(angle_error) < TURN_ANGLE_TOLERANCE) {
+        while(Math.abs(angle_error) > TURN_ANGLE_TOLERANCE) {
+            telemetry.addLine(message);
+        }
             // Stop motors or transition to next action
             frontLeftDrive.setPower(0);
             backLeftDrive.setPower(0);
             frontRightDrive.setPower(0);
             backRightDrive.setPower(0);
             // ... and so on for other motors
-        }
     }
-
 }
