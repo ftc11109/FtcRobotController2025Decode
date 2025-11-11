@@ -45,8 +45,10 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
+import java.sql.Time;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Autonomous(name="Decode Autonomus", group="Robot")
 public class DecodeAutonomus extends LinearOpMode {
@@ -75,14 +77,14 @@ public class DecodeAutonomus extends LinearOpMode {
     // For example, use a value of 2.0 for a 12-tooth spur gear driving a 24-tooth spur gear.
     // This is gearing DOWN for less speed and more torque.
     // For gearing UP, use a gear ratio less than 1.0. Note this will affect the direction of wheel rotation.
-    static final double     COUNTS_PER_MOTOR_REV    = 28 ;    // eg: TETRIX Motor Encoder
+    static final double     COUNTS_PER_MOTOR_REV    = 28 ;
     static final double     DRIVE_GEAR_REDUCTION    = 12.0 ;     // 12:1
     static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
                                                       (WHEEL_DIAMETER_INCHES * 3.14159);
-    static final double     DRIVE_SPEED             = 0.6;
-    static final double     TURN_SPEED              = 0.5;
-    static final double     TURN_ANGLE_TOLERANCE    = 0.25;
+    static final double     DRIVE_SPEED             = 0.4;
+    static final double     TURN_SPEED              = 0.2;
+    static final double     TURN_ANGLE_TOLERANCE    = 6;
     @Override
     public void runOpMode() {
 
@@ -106,8 +108,8 @@ public class DecodeAutonomus extends LinearOpMode {
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         gate = new Gate(hardwareMap);
-        kicker = new Kicker(hardwareMap, null, runtime, true);
-        shooter = new Shooter(hardwareMap, null, null, true);
+        kicker = new Kicker(hardwareMap, null, runtime, true, gate);
+        shooter = new Shooter(hardwareMap, null, null);
 
         imu = hardwareMap.get(IMU.class, "imu");
         // This needs to be changed to match the orientation on your robot
@@ -138,7 +140,7 @@ public class DecodeAutonomus extends LinearOpMode {
 
         String alliance = "";
         String start_pos = "";
-        final int bestRoute = 0;
+        final int bestRoute = 1;
         final int maxRoute = 1;
         int selectedRoute = bestRoute;
 
@@ -198,24 +200,28 @@ public class DecodeAutonomus extends LinearOpMode {
         switch (selectedRoute) {
             case 0:
                 if(start_pos == "Goal") {
-                    encoderDrive(DRIVE_SPEED, -6, -6, -6, -6, 2, "Driving from goal");
+                    driveStraight(DRIVE_SPEED, 6, "Driving off of goal");
                 }
                 else if(start_pos == "Wall") {
-                    encoderDrive(DRIVE_SPEED, 6, 6, 6, 6, 2, "Driving off of wall");
+                    driveStraight(DRIVE_SPEED, 6, "Driving off of wall");
                 }
                 break;
             case 1:
                 //Move away from goal
-                encoderDrive(DRIVE_SPEED, -60,-60, -60, -60, 10, "Driving from goal");
+                driveStraight(DRIVE_SPEED, -22, "Driving away from goal");
                 //Turn shooter towards goal
-                turnToHeading(90, "Turning towards goal");
-                //Spin up shooter and wait for it to spin up
-                shooter.startClose();
-                while(shooter.shooterMotor.getVelocity() - 10 < shooter.targetTps) {
-                    telemetry.addLine("Spinning up shooter");
-                }
-                //Kick!
-                kicker.kick();
+                turnToHeading(-90, "Turning towards goal");
+//                //Spin up shooter and wait for it to spin up
+//                shooter.startCustom(2525);
+//                while(shooter.shooterMotor.getVelocity() - 10 < shooter.targetTps) {
+//                    telemetry.addLine("Spinning up shooter");
+//                }
+//                //Kick!
+//                kicker.kick();
+//                long kickerStartingTime = runtime.now(TimeUnit.MILLISECONDS);
+//                while(runtime.now(TimeUnit.MILLISECONDS) < kickerStartingTime + 700) {
+//                    kicker.tick();
+//                }
 
         }
 
@@ -223,9 +229,9 @@ public class DecodeAutonomus extends LinearOpMode {
         frontPortal.close();
 
         telemetry.addData("Path", "Complete");
-        telemetry.addLine("Current Robot Heading:" + imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+        telemetry.addLine("Current Robot Heading:" + imu.getRobotYawPitchRollAngles().getYaw());
         telemetry.update();
-        sleep(1000);  // pause to display final telemetry message.
+        sleep(3000);  // pause to display final telemetry message.
     }
     //Returns a list of the found AprilTags as a list of AprilTagDetection objects
     public List<AprilTagDetection> getAprilTags(AprilTagProcessor camera) {
@@ -264,6 +270,12 @@ public class DecodeAutonomus extends LinearOpMode {
      *  2) Move runs out of time
      *  3) Driver stops the OpMode running.
      */
+    public void driveStraight(double speed, double inches, String message) {
+        encoderDrive(speed, inches, inches, inches, inches, 30, message);
+    }
+    public void driveStraight(double speed, double inches, double timeoutS, String message) {
+        encoderDrive(speed, inches, inches, inches, inches, timeoutS, message);
+    }
     public void encoderDrive(double speed,
                              double frontLeftInches, double frontRightInches, double backLeftInches, double backRightInches,
                              double timeoutS,
@@ -288,6 +300,11 @@ public class DecodeAutonomus extends LinearOpMode {
             frontRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             backLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             backRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            frontLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            frontRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            backLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            backRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             // reset the timeout time and start motion.
             runtime.reset();
             frontLeftDrive.setPower(Math.abs(speed));
@@ -323,26 +340,57 @@ public class DecodeAutonomus extends LinearOpMode {
         }
     }
     public void turnToHeading(int target_heading, String message) {
-        double target_heading_radians = (float) (target_heading * 0.0174533);
         double current_heading = imu.getRobotYawPitchRollAngles().getYaw();
 
-        double angle_error = target_heading_radians - current_heading;
+        double angle_error = target_heading - current_heading;
 
         double adjustment_turn_power = angle_error * TURN_SPEED;
-        adjustment_turn_power = Range.clip(adjustment_turn_power, -1.0, 1.0);
+        adjustment_turn_power = Range.clip(adjustment_turn_power, -TURN_SPEED, TURN_SPEED);
 
-        frontLeftDrive.setPower(adjustment_turn_power);
-        backLeftDrive.setPower(adjustment_turn_power);
-        frontRightDrive.setPower(-adjustment_turn_power);
-        backRightDrive.setPower(-adjustment_turn_power);
+        frontLeftDrive.setPower(-adjustment_turn_power);
+        backLeftDrive.setPower(-adjustment_turn_power);
+        frontRightDrive.setPower(adjustment_turn_power);
+        backRightDrive.setPower(adjustment_turn_power);
         while(Math.abs(angle_error) > TURN_ANGLE_TOLERANCE) {
             telemetry.addLine(message);
+            current_heading = imu.getRobotYawPitchRollAngles().getYaw();
+            angle_error = target_heading - current_heading;
+            telemetry.addLine("IMU heading: " + imu.getRobotYawPitchRollAngles().getYaw() + ", Target heading: " + target_heading);
+            telemetry.update();
+        }
+        adjustment_turn_power = angle_error * TURN_SPEED;
+        adjustment_turn_power = Range.clip(adjustment_turn_power, -TURN_SPEED, TURN_SPEED);
+
+        frontLeftDrive.setPower(-adjustment_turn_power);
+        backLeftDrive.setPower(-adjustment_turn_power);
+        frontRightDrive.setPower(adjustment_turn_power);
+        backRightDrive.setPower(adjustment_turn_power);
+        while(Math.abs(angle_error) > TURN_ANGLE_TOLERANCE) {
+            telemetry.addLine(message);
+            current_heading = imu.getRobotYawPitchRollAngles().getYaw();
+            angle_error = target_heading - current_heading;
+            telemetry.addLine("IMU heading: " + imu.getRobotYawPitchRollAngles().getYaw() + ", Target heading: " + target_heading);
+            telemetry.update();
+        }
+        adjustment_turn_power = angle_error * TURN_SPEED;
+        adjustment_turn_power = Range.clip(adjustment_turn_power, -TURN_SPEED, TURN_SPEED);
+
+        frontLeftDrive.setPower(-adjustment_turn_power);
+        backLeftDrive.setPower(-adjustment_turn_power);
+        frontRightDrive.setPower(adjustment_turn_power);
+        backRightDrive.setPower(adjustment_turn_power);
+        while(Math.abs(angle_error) > TURN_ANGLE_TOLERANCE) {
+            telemetry.addLine(message);
+            current_heading = imu.getRobotYawPitchRollAngles().getYaw();
+            angle_error = target_heading - current_heading;
+            telemetry.addLine("IMU heading: " + imu.getRobotYawPitchRollAngles().getYaw() + ", Target heading: " + target_heading);
+            telemetry.update();
         }
             // Stop motors or transition to next action
-            frontLeftDrive.setPower(0);
-            backLeftDrive.setPower(0);
-            frontRightDrive.setPower(0);
-            backRightDrive.setPower(0);
+        frontLeftDrive.setPower(0);
+        backLeftDrive.setPower(0);
+        frontRightDrive.setPower(0);
+        backRightDrive.setPower(0);
             // ... and so on for other motors
     }
 }

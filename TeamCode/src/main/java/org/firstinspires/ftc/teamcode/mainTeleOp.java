@@ -28,6 +28,8 @@
  */
 package org.firstinspires.ftc.teamcode;
 
+import com.google.blocks.ftcrobotcontroller.runtime.obsolete.TensorFlowAccess;
+import com.google.blocks.ftcrobotcontroller.runtime.obsolete.TfodAccess;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -119,9 +121,9 @@ public class mainTeleOp extends OpMode {
 
         //Mechanism setup
         intake = new Intake(hardwareMap, gamepad2);
-        shooter = new Shooter(hardwareMap, gamepad1, gate, false);
-        kicker = new Kicker(hardwareMap, gamepad1, runtime, false);
+        shooter = new Shooter(hardwareMap, gamepad1, gate);
         gate = new Gate(hardwareMap);
+        kicker = new Kicker(hardwareMap, gamepad1, runtime, false, gate);
 
         //AprilTag setup
         shooterTags = new AprilTagProcessor.Builder().build();

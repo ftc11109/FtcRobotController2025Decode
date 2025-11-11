@@ -24,11 +24,13 @@ public class Kicker {
     final long motorTime = 125;
     private long motorStartTime = -motorTime;
     public String state = "IDLE";
+    private Gate gate;
 
     DcMotorEx kickerMotor;
-    public Kicker(HardwareMap hardwareMap, Gamepad gamepad, ElapsedTime runTime, boolean isAutonomous) {
+    public Kicker(HardwareMap hardwareMap, Gamepad gamepad, ElapsedTime runTime, boolean isAutonomous, Gate gate) {
         this.runtime = runTime;
         this.gamepad = gamepad;
+        this.gate = gate;
         this.isAutonomous = isAutonomous;
         kickerMotor = hardwareMap.get(DcMotorEx.class, "kicker_motor");
         PIDCoefficients pid = new PIDCoefficients(20, 3, 5);
@@ -41,7 +43,7 @@ public class Kicker {
     }
 
     public void tick() {
-        if (gamepad.right_bumper && !gamepad.rightBumperWasPressed() && this.state == "IDLE") {
+        if (gamepad.right_bumper && !gamepad.rightBumperWasPressed() && this.state == "IDLE" && !this.isAutonomous) {
             this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
             this.state = "KICKING";
             kickerMotor.setPower(1);
@@ -63,15 +65,6 @@ public class Kicker {
                 this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
                 this.state = "KICKING";
                 kickerMotor.setPower(1);
-            }
-            if(runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + 250 && this.state == "KICKING") {
-                this.state = "RETURNING";
-                kickerMotor.setPower(-1);
-                this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
-            }
-            if(runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + 270 && this.state == "RETURNING") {
-                this.state = "IDLE";
-                kickerMotor.setPower(-0.02);
             }
         }
     }
