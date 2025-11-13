@@ -23,8 +23,21 @@ public class Kicker {
     private boolean isAutonomous;
     final long motorTime = 125;
     private long motorStartTime = -motorTime;
-    public String state = "IDLE";
+    public enum STATE {
+        CLOSING,
+        KICKING,
+        RETURNING,
+        IDLE,
+        OPENING,
+        RELOADING
+    };
+    public STATE state = STATE.IDLE;
     private Gate gate;
+
+    public final long servoTime = 500;
+    public final long kickingTime = 250;
+    public final long reloadingTime = 1000;
+    public final long totalTime = servoTime * 2 + kickingTime * 2 + reloadingTime + 1000;
 
     DcMotorEx kickerMotor;
     public Kicker(HardwareMap hardwareMap, Gamepad gamepad, ElapsedTime runTime, boolean isAutonomous, Gate gate) {
@@ -43,28 +56,44 @@ public class Kicker {
     }
 
     public void tick() {
-        if (gamepad.right_bumper && !gamepad.rightBumperWasPressed() && this.state == "IDLE" && !this.isAutonomous) {
+        if(!this.isAutonomous) {
+            if (gamepad.right_bumper && !gamepad.rightBumperWasPressed() && this.state == STATE.IDLE) {
+                this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
+                this.state = STATE.CLOSING;
+                gate.gateUp();
+            }
+        }
+        if(runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + servoTime + 1000 && this.state == STATE.CLOSING) {
+            this.state = STATE.KICKING;
             this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
-            this.state = "KICKING";
             kickerMotor.setPower(1);
         }
-        if(runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + 250 && this.state == "KICKING") {
-            this.state = "RETURNING";
+        if(runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + 250 && this.state == STATE.KICKING) {
+            this.state = STATE.RETURNING;
             kickerMotor.setPower(-1);
             this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
         }
-        if(this.runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + 270 && this.state == "RETURNING") {
-            this.state = "IDLE";
+        if(this.runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + 270 && this.state == STATE.RETURNING) {
+            this.state = STATE.OPENING;
+            this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
+            gate.gateDown();
             kickerMotor.setPower(-0.02);
+        }
+        if(this.runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + servoTime && this.state == STATE.OPENING) {
+            this.state = STATE.RELOADING;
+            this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
+        }
+        if(this.runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + reloadingTime && this.state == STATE.RELOADING) {
+            this.state = STATE.IDLE;
         }
 
     }
     public void kick() {
         if(isAutonomous) {
-            if (this.state == "IDLE") {
+            if (this.state == STATE.IDLE) {
                 this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
-                this.state = "KICKING";
-                kickerMotor.setPower(1);
+                this.state = STATE.CLOSING;
+                gate.gateUp();
             }
         }
     }

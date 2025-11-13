@@ -12,7 +12,7 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
-@Disabled
+
 @TeleOp(name = "AprilTagTesting", group = "Robot")
 public class AprilTagTestOpMode extends OpMode {
     private VisionPortal visionPortal;

@@ -6,6 +6,7 @@ public class Gate {
     Servo gateServo;
     public Gate(HardwareMap hardwareMap) {
         gateServo = hardwareMap.get(Servo.class, "gate_servo");
+        gateServo.setPosition(0);
     }
     public void gateUp() {
         gateServo.setPosition(1);

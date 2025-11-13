@@ -46,6 +46,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -140,6 +141,11 @@ public class DecodeAutonomus extends LinearOpMode {
 
         String alliance = "";
         String start_pos = "";
+        List<String> route_desc = new ArrayList<>();
+        //Route 0
+        route_desc.add("Drive off line");
+        //Route 1
+        route_desc.add("Drive off line, shoot one ball");
         final int bestRoute = 1;
         final int maxRoute = 1;
         int selectedRoute = bestRoute;
@@ -188,7 +194,7 @@ public class DecodeAutonomus extends LinearOpMode {
                 selectedRoute = maxRoute;
             }
             telemetry.addLine("Use D-pad up and down to select route");
-            telemetry.addLine("Selected: " +  selectedRoute);
+            telemetry.addLine(route_desc.get(selectedRoute) + " selected");
             telemetry.update();
 
         }
@@ -210,19 +216,37 @@ public class DecodeAutonomus extends LinearOpMode {
                 //Move away from goal
                 driveStraight(DRIVE_SPEED, -22, "Driving away from goal");
                 //Turn shooter towards goal
-                turnToHeading(-90, "Turning towards goal");
-//                //Spin up shooter and wait for it to spin up
-//                shooter.startCustom(2525);
-//                while(shooter.shooterMotor.getVelocity() - 10 < shooter.targetTps) {
-//                    telemetry.addLine("Spinning up shooter");
-//                }
-//                //Kick!
-//                kicker.kick();
-//                long kickerStartingTime = runtime.now(TimeUnit.MILLISECONDS);
-//                while(runtime.now(TimeUnit.MILLISECONDS) < kickerStartingTime + 700) {
-//                    kicker.tick();
-//                }
+                frontLeftDrive.setPower(DRIVE_SPEED);
+                backLeftDrive.setPower(-DRIVE_SPEED);
+                frontRightDrive.setPower(-DRIVE_SPEED);
+                backRightDrive.setPower(DRIVE_SPEED);
+                long driveStartTime = runtime.now(TimeUnit.MILLISECONDS);
+                while(runtime.now(TimeUnit.MILLISECONDS) < driveStartTime + 222) {
+                    telemetry.addLine("Strafing from wall");
+                    telemetry.update();
+                }
+                frontLeftDrive.setPower(0);
+                backLeftDrive.setPower(0);
+                frontRightDrive.setPower(0);
+                backRightDrive.setPower(0);
+                //encoderDrive(DRIVE_SPEED, 5, -5, 5, -5, 30, "Strafing away from wall");
 
+                turnToHeading(-90, "Turning towards goal");
+
+                //Spin up shooter and wait for it to spin up
+                shooter.startMed();
+                while(shooter.shooterMotor.getVelocity() - 10 < shooter.targetTps) {
+                    telemetry.addLine("Spinning up shooter");
+                    telemetry.addLine("Shooter Speed: " + shooter.shooterMotor.getVelocity());
+                    telemetry.update();
+                }
+                //Kick!
+                for(int i = 0; i < 3; i++) {
+                    kicker.kick();
+                    while(kicker.state != Kicker.STATE.IDLE) {
+                        kicker.tick();
+                    }
+                }
         }
 
         shooterPortal.close();

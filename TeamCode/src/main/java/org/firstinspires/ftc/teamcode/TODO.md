@@ -15,9 +15,9 @@ DONE STUFF:
 * Mecanum field-orientated drive
 * Route wires
 * Polycarb ramp for transfer
+* Servo (ramp for limiting balls)
 
 TODO (FOR NEXT COMP.):
-* Servo (ramp for limiting balls)
 * Dial in shooter
 * Less basic auto
 

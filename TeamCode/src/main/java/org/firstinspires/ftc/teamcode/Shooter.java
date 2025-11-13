@@ -45,6 +45,10 @@ public class Shooter {
         shooterMotor.setVelocity((28 * (farSpeed / gearing) / 60));
         this.targetTps = (28 * (farSpeed / gearing)) / 60;
     }
+    public void startMed() {
+        shooterMotor.setVelocity((28 * (medSpeed / gearing) / 60));
+        this.targetTps = (28 * (medSpeed / gearing)) / 60;
+    }
     //Stop the shooter
     public void stopMotor() {
         shooterMotor.setVelocity(0);
