@@ -190,8 +190,7 @@ public class mainTeleOp extends OpMode {
         telemetry.addLine("Hold left bumper to drive in robot relative");
         telemetry.addLine("The left joystick drives the robot");
         telemetry.addLine("Moving the right joystick left and right turns the robot");
-        telemetry.addLine("Current Robot Heading:" + imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
-        telemetry.addLine("Kicker Encoder Reading: " + kicker.kickerMotor.getCurrentPosition());
+        telemetry.addLine("Current Robot Heading:" + imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
         telemetry.addLine("Current Shooter RPM: " + shooter.shooterMotor.getVelocity() / 60 * 28);
         telemetry.addLine("Kicker State: " + kicker.state);
         telemetry.addLine();

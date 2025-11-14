@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -17,6 +18,7 @@ import java.util.List;
 public class AprilTagTestOpMode extends OpMode {
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTag;
+    private IMU imu;
 
     @Override
     public void init() {
@@ -52,9 +54,11 @@ public class AprilTagTestOpMode extends OpMode {
                 double yPosition = detection.ftcPose.y;
                 double zPosition = detection.ftcPose.z;// X position relative to the camera
                 // ... and other pose data (y, z, yaw, pitch, roll)
-
+                double bearing = detection.ftcPose.bearing;
+                double roll = detection.ftcPose.roll;
+                double pitch = detection.ftcPose.pitch;
                 // Implement logic based on the detected tag, e.g.,
-                 if (tagId == 24) {
+                 if (tagId == 24 || tagId == 20) {
                      // Perform actions based on this specific tag
                      double offset_x = 0 - xPosition;
                      double threshhold = 2;
@@ -74,6 +78,9 @@ public class AprilTagTestOpMode extends OpMode {
                 telemetry.addData("X", xPosition);
                 telemetry.addData("Y", yPosition);
                 telemetry.addData("Z", zPosition);
+                telemetry.addData("Bearing", bearing);
+                telemetry.addData("Roll", roll);
+                telemetry.addData("Pitch", pitch);
                 // Add more telemetry for other relevant data
             }
             else {

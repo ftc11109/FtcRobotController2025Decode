@@ -85,7 +85,7 @@ public class DecodeAutonomus extends LinearOpMode {
                                                       (WHEEL_DIAMETER_INCHES * 3.14159);
     static final double     DRIVE_SPEED             = 0.4;
     static final double     TURN_SPEED              = 0.2;
-    static final double     TURN_ANGLE_TOLERANCE    = 6;
+    static final double     TURN_ANGLE_TOLERANCE    = 3;
     @Override
     public void runOpMode() {
 
@@ -221,7 +221,7 @@ public class DecodeAutonomus extends LinearOpMode {
                 frontRightDrive.setPower(-DRIVE_SPEED);
                 backRightDrive.setPower(DRIVE_SPEED);
                 long driveStartTime = runtime.now(TimeUnit.MILLISECONDS);
-                while(runtime.now(TimeUnit.MILLISECONDS) < driveStartTime + 222) {
+                while(runtime.now(TimeUnit.MILLISECONDS) < driveStartTime + 500) {
                     telemetry.addLine("Strafing from wall");
                     telemetry.update();
                 }
@@ -231,13 +231,36 @@ public class DecodeAutonomus extends LinearOpMode {
                 backRightDrive.setPower(0);
                 //encoderDrive(DRIVE_SPEED, 5, -5, 5, -5, 30, "Strafing away from wall");
 
-                turnToHeading(-90, "Turning towards goal");
+//                turnRight(0.15);
+//                while(!getAprilTags(shooterTags).contains()) {
+//                    telemetry.addLine("No tags, continuing to turn...");
+//                    telemetry.update();
+//                }
+//                stopMotors();
+                turnToHeading(-73, "Turning towards goal");
+                long waitTime = runtime.now(TimeUnit.MILLISECONDS);
+                while(runtime.now(TimeUnit.MILLISECONDS) < waitTime + 3000) {
+                    telemetry.addLine("Briefly pausing");
+                    telemetry.update();
+                    if(getAprilTags(shooterTags).size() > 0) {
+                        break;
+                    }
+                }
+                boolean triedToAlign = false;
+                telemetry.addLine("Aligning to tag");
+                telemetry.update();
+                if(getAprilTags(shooterTags).size() > 0) {
+                    alignToTag(getAprilTags(shooterTags).get(0));
+                    triedToAlign = true;
+                    //telemetry.addLine("Tag: " + getAprilTags(shooterTags).get(0).id);
+                }
 
                 //Spin up shooter and wait for it to spin up
                 shooter.startMed();
                 while(shooter.shooterMotor.getVelocity() - 10 < shooter.targetTps) {
                     telemetry.addLine("Spinning up shooter");
                     telemetry.addLine("Shooter Speed: " + shooter.shooterMotor.getVelocity());
+                    telemetry.addLine("Aligned? " + triedToAlign);
                     telemetry.update();
                 }
                 //Kick!
@@ -260,25 +283,44 @@ public class DecodeAutonomus extends LinearOpMode {
     //Returns a list of the found AprilTags as a list of AprilTagDetection objects
     public List<AprilTagDetection> getAprilTags(AprilTagProcessor camera) {
         List<AprilTagDetection> detections = camera.getDetections();
-        List<AprilTagDetection> tags = Collections.emptyList();
+        List<AprilTagDetection> tags = new ArrayList<>();
         for(int i = 0; i < detections.size(); i++) {
             AprilTagDetection detection = detections.get(i);
-            tags.set(i, detection);
+            tags.add(detection);
         }
 
         return tags;
     }
+    public void turnRight(double power) {
+        frontLeftDrive.setPower(power);
+        backLeftDrive.setPower(power);
+        frontRightDrive.setPower(-power);
+        backRightDrive.setPower(-power);
+    }
+    public void turnLeft(double power) {
+        frontLeftDrive.setPower(-power);
+        backLeftDrive.setPower(-power);
+        frontRightDrive.setPower(power);
+        backRightDrive.setPower(power);
+    }
+    public void stopMotors() {
+        frontLeftDrive.setPower(0);
+        backLeftDrive.setPower(0);
+        frontRightDrive.setPower(0);
+        backRightDrive.setPower(0);
+    }
     /*
     * Method to align the robot to a tag
     * Returns false if the tag couldn't be found
-    * Utilizes the encoderDrive() method
+    * Uses the bearing of a tag and TurnToHeading
     */
     public boolean alignToTag(AprilTagDetection tag) {
         //Make sure we are looking at the alliance goal tag
         if(tag.id == ALLIANCE_TAG) {
             //Check X value
-            double x = tag.rawPose.x;
-            encoderDrive(DRIVE_SPEED, -x, x, -x, x, 50, "Rotating to tag" + tag.id);
+            double tagBearing = tag.ftcPose.bearing;
+            double robotHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+            turnToHeading((int) (robotHeading + tagBearing), "Turning to tag");
             return true;
         }
         else {
@@ -286,6 +328,13 @@ public class DecodeAutonomus extends LinearOpMode {
         }
     }
 
+
+    public void driveStraight(double speed, double inches, String message) {
+        encoderDrive(speed, inches, inches, inches, inches, 30, message);
+    }
+    public void driveStraight(double speed, double inches, double timeoutS, String message) {
+        encoderDrive(speed, inches, inches, inches, inches, timeoutS, message);
+    }
     /*
      *  Method to perform a relative move, based on encoder counts.
      *  Encoders are not reset as the move is based on the current position.
@@ -294,12 +343,6 @@ public class DecodeAutonomus extends LinearOpMode {
      *  2) Move runs out of time
      *  3) Driver stops the OpMode running.
      */
-    public void driveStraight(double speed, double inches, String message) {
-        encoderDrive(speed, inches, inches, inches, inches, 30, message);
-    }
-    public void driveStraight(double speed, double inches, double timeoutS, String message) {
-        encoderDrive(speed, inches, inches, inches, inches, timeoutS, message);
-    }
     public void encoderDrive(double speed,
                              double frontLeftInches, double frontRightInches, double backLeftInches, double backRightInches,
                              double timeoutS,

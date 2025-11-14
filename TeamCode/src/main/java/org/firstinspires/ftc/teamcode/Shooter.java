@@ -10,7 +10,7 @@ public class Shooter {
     DcMotorEx shooterMotor;
     public double targetTps;
     public int closeSpeed = 2850;
-    public int farSpeed = 5000;
+    public int farSpeed = 3700;
     public int medSpeed = 2525;
     public double gearing = 1;
 
