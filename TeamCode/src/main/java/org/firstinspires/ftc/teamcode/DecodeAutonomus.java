@@ -69,6 +69,17 @@ public class DecodeAutonomus extends LinearOpMode {
     AprilTagProcessor shooterTags;
     VisionPortal frontPortal;
     VisionPortal shooterPortal;
+    private enum DIRECTION {
+        FORWARD(1),
+        BACKWARD(-1);
+        private final int num;
+        DIRECTION(int num) {
+            this.num = num;
+        };
+        int getValue() {
+            return this.num;
+        };
+    }
 
     int ALLIANCE_TAG;
 
@@ -110,7 +121,7 @@ public class DecodeAutonomus extends LinearOpMode {
 
         gate = new Gate(hardwareMap);
         kicker = new Kicker(hardwareMap, null, runtime, true, gate);
-        shooter = new Shooter(hardwareMap, null, null);
+        shooter = new Shooter(hardwareMap, null, null, runtime);
 
         imu = hardwareMap.get(IMU.class, "imu");
         // This needs to be changed to match the orientation on your robot
@@ -145,7 +156,7 @@ public class DecodeAutonomus extends LinearOpMode {
         //Route 0
         route_desc.add("Drive off line");
         //Route 1
-        route_desc.add("Drive off line, shoot one ball");
+        route_desc.add("Drive off line, shoot three balls");
         final int bestRoute = 1;
         final int maxRoute = 1;
         int selectedRoute = bestRoute;
@@ -168,12 +179,12 @@ public class DecodeAutonomus extends LinearOpMode {
             //Positioning
             telemetry.addLine("Starting Position Selection:");
             telemetry.addLine("Press Y for wall start");
-            telemetry.addLine("Press A for goal start");
+            telemetry.addLine("Press A for goal wall start");
             if (gamepad1.y) {
-                start_pos = "Wall";
+                start_pos = "Far wall";
             }
             if (gamepad1.a) {
-                start_pos = "Goal";
+                start_pos = "Goal wall";
             }
             if(start_pos != "") {
                 telemetry.addLine(start_pos + " starting position selected");
@@ -216,10 +227,18 @@ public class DecodeAutonomus extends LinearOpMode {
                 //Move away from goal
                 driveStraight(DRIVE_SPEED, -22, "Driving away from goal");
                 //Turn shooter towards goal
-                frontLeftDrive.setPower(DRIVE_SPEED);
-                backLeftDrive.setPower(-DRIVE_SPEED);
-                frontRightDrive.setPower(-DRIVE_SPEED);
-                backRightDrive.setPower(DRIVE_SPEED);
+                if(alliance == "Red") {
+                    frontLeftDrive.setPower(DRIVE_SPEED);
+                    backLeftDrive.setPower(-DRIVE_SPEED);
+                    frontRightDrive.setPower(-DRIVE_SPEED);
+                    backRightDrive.setPower(DRIVE_SPEED);
+                }
+                else if(alliance == "Blue") {
+                    frontLeftDrive.setPower(-DRIVE_SPEED);
+                    backLeftDrive.setPower(DRIVE_SPEED);
+                    frontRightDrive.setPower(DRIVE_SPEED);
+                    backRightDrive.setPower(-DRIVE_SPEED);
+                }
                 long driveStartTime = runtime.now(TimeUnit.MILLISECONDS);
                 while(runtime.now(TimeUnit.MILLISECONDS) < driveStartTime + 500) {
                     telemetry.addLine("Strafing from wall");
@@ -229,15 +248,13 @@ public class DecodeAutonomus extends LinearOpMode {
                 backLeftDrive.setPower(0);
                 frontRightDrive.setPower(0);
                 backRightDrive.setPower(0);
-                //encoderDrive(DRIVE_SPEED, 5, -5, 5, -5, 30, "Strafing away from wall");
 
-//                turnRight(0.15);
-//                while(!getAprilTags(shooterTags).contains()) {
-//                    telemetry.addLine("No tags, continuing to turn...");
-//                    telemetry.update();
-//                }
-//                stopMotors();
-                turnToHeading(-73, "Turning towards goal");
+                if(alliance == "Red") {
+                    turnToHeading(-73, "Turning towards goal");
+                }
+                else {
+                    turnToHeading(-107, "Turning towards goal");
+                }
                 long waitTime = runtime.now(TimeUnit.MILLISECONDS);
                 while(runtime.now(TimeUnit.MILLISECONDS) < waitTime + 3000) {
                     telemetry.addLine("Briefly pausing");

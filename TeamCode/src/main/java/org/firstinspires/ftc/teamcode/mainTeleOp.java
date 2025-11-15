@@ -121,7 +121,7 @@ public class mainTeleOp extends OpMode {
 
         //Mechanism setup
         intake = new Intake(hardwareMap, gamepad2);
-        shooter = new Shooter(hardwareMap, gamepad1, gate);
+        shooter = new Shooter(hardwareMap, gamepad2, gate, runtime);
         gate = new Gate(hardwareMap);
         kicker = new Kicker(hardwareMap, gamepad1, runtime, false, gate);
 
@@ -171,7 +171,7 @@ public class mainTeleOp extends OpMode {
         } else {
             driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         }
-        //Run one iteration of the intake loop code
+        //Run one iteration of the mechanism loop code
         intake.tick();
         kicker.tick();
         shooter.tick();

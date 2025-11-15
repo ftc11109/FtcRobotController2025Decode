@@ -16,10 +16,11 @@ DONE STUFF:
 * Route wires
 * Polycarb ramp for transfer
 * Servo (ramp for limiting balls)
-
-TODO (FOR NEXT COMP.):
 * Dial in shooter
 * Less basic auto
+
+TODO (FOR NEXT COMP.):
+* Add opposite strafing for blue auto
 
 FUTURE THINGS:
 * Really less basic auto
