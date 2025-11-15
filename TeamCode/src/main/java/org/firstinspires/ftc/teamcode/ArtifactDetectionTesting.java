@@ -69,6 +69,7 @@ import java.util.List;
  */
 
 @TeleOp(name = "Concept: Vision Color-Locator (Circle)", group = "Concept")
+@Disabled
 public class ArtifactDetectionTesting extends LinearOpMode {
     @Override
     public void runOpMode() {

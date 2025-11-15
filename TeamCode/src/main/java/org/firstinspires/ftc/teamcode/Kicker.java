@@ -36,8 +36,9 @@ public class Kicker {
 
     public final long servoTime = 500;
     public final long kickingTime = 250;
-    public final long reloadingTime = 1000;
-    public final long totalTime = servoTime * 2 + kickingTime * 2 + reloadingTime + 1000;
+    public final long reloadingTime = 500;
+    public final long upDelay = 0;
+    public final long totalTime = servoTime * 2 + kickingTime * 2 + reloadingTime + upDelay;
 
     DcMotorEx kickerMotor;
     public Kicker(HardwareMap hardwareMap, Gamepad gamepad, ElapsedTime runTime, boolean isAutonomous, Gate gate) {
@@ -63,7 +64,7 @@ public class Kicker {
                 gate.gateUp();
             }
         }
-        if(runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + servoTime + 1000 && this.state == STATE.CLOSING) {
+        if(runtime.now(TimeUnit.MILLISECONDS) > this.motorStartTime + servoTime + upDelay && this.state == STATE.CLOSING) {
             this.state = STATE.KICKING;
             this.motorStartTime = runtime.now(TimeUnit.MILLISECONDS);
             kickerMotor.setPower(1);

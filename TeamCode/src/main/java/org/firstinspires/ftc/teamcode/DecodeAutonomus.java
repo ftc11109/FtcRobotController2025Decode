@@ -226,7 +226,7 @@ public class DecodeAutonomus extends LinearOpMode {
             case 1:
                 //Move away from goal
                 driveStraight(DRIVE_SPEED, -22, "Driving away from goal");
-                //Turn shooter towards goal
+                //Strafe
                 if(alliance == "Red") {
                     frontLeftDrive.setPower(DRIVE_SPEED);
                     backLeftDrive.setPower(-DRIVE_SPEED);
@@ -253,7 +253,7 @@ public class DecodeAutonomus extends LinearOpMode {
                     turnToHeading(-73, "Turning towards goal");
                 }
                 else {
-                    turnToHeading(-107, "Turning towards goal");
+                    turnToHeading(-98, "Turning towards goal");
                 }
                 long waitTime = runtime.now(TimeUnit.MILLISECONDS);
                 while(runtime.now(TimeUnit.MILLISECONDS) < waitTime + 3000) {
@@ -263,21 +263,25 @@ public class DecodeAutonomus extends LinearOpMode {
                         break;
                     }
                 }
-                boolean triedToAlign = false;
-                telemetry.addLine("Aligning to tag");
-                telemetry.update();
-                if(getAprilTags(shooterTags).size() > 0) {
-                    alignToTag(getAprilTags(shooterTags).get(0));
-                    triedToAlign = true;
-                    //telemetry.addLine("Tag: " + getAprilTags(shooterTags).get(0).id);
-                }
-
-                //Spin up shooter and wait for it to spin up
+//                boolean triedToAlign = false;
+//                telemetry.addLine("Aligning to tag");
+//                telemetry.update();
+//                if(getAprilTags(shooterTags).size() > 0) {
+//                    alignToTag(getAprilTags(shooterTags).get(0));
+//                    triedToAlign = true;
+//                    //telemetry.addLine("Tag: " + getAprilTags(shooterTags).get(0).id);
+//                }
                 shooter.startMed();
+                //Wait for shooter to spin up
                 while(shooter.shooterMotor.getVelocity() - 10 < shooter.targetTps) {
                     telemetry.addLine("Spinning up shooter");
                     telemetry.addLine("Shooter Speed: " + shooter.shooterMotor.getVelocity());
-                    telemetry.addLine("Aligned? " + triedToAlign);
+                    //telemetry.addLine("Aligned? " + triedToAlign);
+                    telemetry.update();
+                }
+                long startTime = runtime.now(TimeUnit.MILLISECONDS);
+                while(runtime.now(TimeUnit.MILLISECONDS) > startTime + 250) {
+                    telemetry.addLine("Waiting...");
                     telemetry.update();
                 }
                 //Kick!

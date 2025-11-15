@@ -136,27 +136,27 @@ public class mainTeleOp extends OpMode {
     @Override
     public void loop() {
         //AprilTag detections
-        List<AprilTagDetection> currentDetections = shooterTags.getDetections();
-        double goalTagX;
-        double goalTagY;
-        double goalTagZ;
-        if(currentDetections.size() > 0) {
-            //AprilTag stuff here
-            for(int i = 0; i < currentDetections.size(); i++) {
-                AprilTagDetection detection = currentDetections.get(i);
-                if(detection.id == allianceTag) {
-                    AprilTagPoseRaw pose = detection.rawPose;
-                    goalTagX = pose.x;
-                    goalTagY = pose.y;
-                    goalTagZ = pose.z;
-                    telemetry.addLine("Alliance AprilTag detected");
-                    telemetry.addData("XYZ data:", "%2d, %2d, %2d", goalTagX, goalTagY, goalTagZ);
-                }
-            }
-        }
-        else {
-            telemetry.addLine("No Tags");
-        }
+//        List<AprilTagDetection> currentDetections = shooterTags.getDetections();
+//        double goalTagX;
+//        double goalTagY;
+//        double goalTagZ;
+//        if(currentDetections.size() > 0) {
+//            //AprilTag stuff here
+//            for(int i = 0; i < currentDetections.size(); i++) {
+//                AprilTagDetection detection = currentDetections.get(i);
+//                if(detection.id == allianceTag) {
+//                    AprilTagPoseRaw pose = detection.rawPose;
+//                    goalTagX = pose.x;
+//                    goalTagY = pose.y;
+//                    goalTagZ = pose.z;
+//                    telemetry.addLine("Alliance AprilTag detected");
+//                    telemetry.addData("XYZ data:", "%2d, %2d, %2d", goalTagX, goalTagY, goalTagZ);
+//                }
+//            }
+//        }
+//        else {
+//            telemetry.addLine("No Tags");
+//        }
 
 
         // If you press the start button, then you reset the Yaw to be zero from the way

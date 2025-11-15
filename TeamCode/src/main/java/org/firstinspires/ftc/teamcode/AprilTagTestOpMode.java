@@ -15,6 +15,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 @TeleOp(name = "AprilTagTesting", group = "Robot")
+@Disabled
 public class AprilTagTestOpMode extends OpMode {
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTag;
